@@ -48,7 +48,7 @@ Client applications currently exist for B4J, B4A and Python to complete the cros
 ## Architecture
 | Layer           | Technology                        |
 | --------------- | --------------------------------- |
-| Microcontroller | ESP32 Plus (Keyestudio KS5009)    |
+| Microcontroller | ESP32 Plus Keyestudio [KS5016](wiki.keyestudio.com/KS5016_Keyestudio_ESP32_PLUS_Development_Board)    |
 | Firmware        | B4R + wrapped C++ libraries       |
 | Communication   | BLE and MQTT                      |
 | Integration     | JSON payloads, binary BLE packets |
