@@ -83,6 +83,7 @@ Follow the Keyestudio KS5009 guide and ensure all sensors/actuators are wired co
 2. Flash the Firmware
 Requirements:
 - B4R 4.00 (recommended)
+- B4R Conditional Communication Mode: BLE or MQTT or BLE,MQTT
 - Arduino-CLI 1.3.1
 - ESP32 board definitions (min 3.3.3)
 - Board: **ESP32 Wrover Kit (all versions)**
