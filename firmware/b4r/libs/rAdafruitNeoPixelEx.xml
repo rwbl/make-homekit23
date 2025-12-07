@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<root>
+    <doclet-version-NOT-library-version>1.00</doclet-version-NOT-library-version>
+    <class>
+        <name>B4R::B4RAdafruitNeoPixelEx</name>
+        <shortname>AdafruitNeoPixelEx</shortname>
+        <comment>@class B4RAdafruitNeoPixelEx
+@brief B4R wrapper around the Adafruit_NeoPixel class for controlling addressable RGB and RGBW LEDs.</comment>
+        <property>
+            <name>Brightness</name>
+            <comment>@brief Sets the global brightness for all pixels.
+@param level Brightness level (0–255), where 0 is off and 255 is maximum.</comment>
+            <returntype>Byte</returntype>
+            <parameter>
+                <name>level</name>
+                <type>Byte</type>
+            </parameter>
+        </property>
+        <method>
+            <name DesignerName="Initialize">Initialize</name>
+            <comment>@brief Initializes the NeoPixel object.
+@param numberOfPixels Total number of Pixels in the strip or ring.
+@param pinNumber GPIO pin connected to the NeoPixel data line.
+@param pixelType NeoPixel color order constant (e.g. NEO_GRB). Add 0x100 for 400 kHz devices.</comment>
+            <returntype>B4R::void</returntype>
+            <parameter>
+                <name>numberOfPixels</name>
+                <type>UInt</type>
+            </parameter>
+            <parameter>
+                <name>pinNumber</name>
+                <type>Byte</type>
+            </parameter>
+            <parameter>
+                <name>pixelType</name>
+                <type>UInt</type>
+            </parameter>
+        </method>
+        <method>
+            <name DesignerName="NumberOfPixels">NumberOfPixels</name>
+            <comment>@brief Get number of pixels.
+@return UInt 32-bit packed color.</comment>
+            <returntype>uint</returntype>
+        </method>
+        <method>
+            <name DesignerName="SetColor">SetColor</name>
+            <comment>@brief Sets the color all pixels using RGB values.
+@param R Red intensity (0–255).
+@param G Green intensity (0–255).
+@param B Blue intensity (0–255).</comment>
+            <returntype>B4R::void</returntype>
+            <parameter>
+                <name>R</name>
+                <type>Byte</type>
+            </parameter>
+            <parameter>
+                <name>G</name>
+                <type>Byte</type>
+            </parameter>
+            <parameter>
+                <name>B</name>
+                <type>Byte</type>
+            </parameter>
+        </method>
+        <method>
+            <name DesignerName="SetPixelColor">SetPixelColor</name>
+            <comment>@brief Sets the color of a specific pixel using RGB values.
+@param index Pixel index (0-based).
+@param R Red intensity (0–255).
+@param G Green intensity (0–255).
+@param B Blue intensity (0–255).</comment>
+            <returntype>B4R::void</returntype>
+            <parameter>
+                <name>index</name>
+                <type>UInt</type>
+            </parameter>
+            <parameter>
+                <name>R</name>
+                <type>Byte</type>
+            </parameter>
+            <parameter>
+                <name>G</name>
+                <type>Byte</type>
+            </parameter>
+            <parameter>
+                <name>B</name>
+                <type>Byte</type>
+            </parameter>
+        </method>
+        <method>
+            <name DesignerName="SetPixelColor2">SetPixelColor2</name>
+            <comment>@brief Sets the color of a specific pixel using RGBW values.
+@param index Pixel index (0-based).
+@param R Red intensity (0–255).
+@param G Green intensity (0–255).
+@param B Blue intensity (0–255).
+@param W White intensity (0–255).</comment>
+            <returntype>B4R::void</returntype>
+            <parameter>
+                <name>index</name>
+                <type>UInt</type>
+            </parameter>
+            <parameter>
+                <name>R</name>
+                <type>Byte</type>
+            </parameter>
+            <parameter>
+                <name>G</name>
+                <type>Byte</type>
+            </parameter>
+            <parameter>
+                <name>B</name>
+                <type>Byte</type>
+            </parameter>
+            <parameter>
+                <name>W</name>
+                <type>Byte</type>
+            </parameter>
+        </method>
+        <method>
+            <name DesignerName="SetPixelColor3">SetPixelColor3</name>
+            <comment>@brief Sets the color of a specific pixel using a packed 32-bit color value.
+@param index Pixel index (0-based).
+@param packedColor Packed 32-bit RGB or RGBW color.</comment>
+            <returntype>B4R::void</returntype>
+            <parameter>
+                <name>index</name>
+                <type>UInt</type>
+            </parameter>
+            <parameter>
+                <name>packedColor</name>
+                <type>ULong</type>
+            </parameter>
+        </method>
+        <method>
+            <name DesignerName="ColorHSV">ColorHSV</name>
+            <comment>@brief Converts a hue value into a packed 32-bit RGB color.
+@param hue 16-bit hue value (0–65535).
+@return 32-bit packed color.</comment>
+            <returntype>ULong</returntype>
+            <parameter>
+                <name>hue</name>
+                <type>UInt</type>
+            </parameter>
+        </method>
+        <method>
+            <name DesignerName="ColorHSV2">ColorHSV2</name>
+            <comment>@brief Converts hue, saturation, and value into a packed 32-bit RGB color.
+@param hue 16-bit hue value (0–65535).
+@param sat 8-bit saturation (0–255).
+@param val 8-bit value (0–255).
+@return 32-bit packed color value.
+@note The result can be passed to SetPixelColor3().</comment>
+            <returntype>ULong</returntype>
+            <parameter>
+                <name>hue</name>
+                <type>UInt</type>
+            </parameter>
+            <parameter>
+                <name>sat</name>
+                <type>Byte</type>
+            </parameter>
+            <parameter>
+                <name>val</name>
+                <type>Byte</type>
+            </parameter>
+        </method>
+        <method>
+            <name DesignerName="Gamma32">Gamma32</name>
+            <comment>@brief Applies gamma correction to a packed 32-bit color.
+@param packedColor Input packed color value.
+@return Gamma-corrected 32-bit color.</comment>
+            <returntype>ULong</returntype>
+            <parameter>
+                <name>packedColor</name>
+                <type>ULong</type>
+            </parameter>
+        </method>
+        <method>
+            <name DesignerName="Fill">Fill</name>
+            <comment>@brief Fills a range of pixels with a single color.
+@param color Color to fill (default: 0/off).
+@param first Starting pixel index (default: 0).
+@param count Number of pixels to fill (default: all).</comment>
+            <returntype>B4R::void</returntype>
+            <parameter>
+                <name>color</name>
+                <type>ULong</type>
+            </parameter>
+            <parameter>
+                <name>first</name>
+                <type>Byte</type>
+            </parameter>
+            <parameter>
+                <name>count</name>
+                <type>Byte</type>
+            </parameter>
+        </method>
+        <method>
+            <name DesignerName="GetPixelColor">GetPixelColor</name>
+            <comment>@brief Retrieves the current color value of a pixel.
+@param index Pixel index (0-based).
+@return 32-bit packed color (RGB or RGBW).</comment>
+            <returntype>ULong</returntype>
+            <parameter>
+                <name>index</name>
+                <type>UInt</type>
+            </parameter>
+        </method>
+        <method>
+            <name DesignerName="Show">Show</name>
+            <comment>@brief Sends updated pixel colors to the LEDs.
+@note Must be called after color changes for updates to appear.</comment>
+            <returntype>B4R::void</returntype>
+        </method>
+        <method>
+            <name DesignerName="Clear">Clear</name>
+            <comment>@brief Clears all pixel colors (sets them to 0/off).</comment>
+            <returntype>B4R::void</returntype>
+        </method>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_RGB">B4RAdafruitNeoPixelEx_NEO_RGB</name>
+            <comment>&lt; @brief Red, Green, Blue color order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_RBG">B4RAdafruitNeoPixelEx_NEO_RBG</name>
+            <comment>&lt; @brief Red, Blue, Green color order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_GRB">B4RAdafruitNeoPixelEx_NEO_GRB</name>
+            <comment>&lt; @brief Green, Red, Blue color order (most common).</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_GBR">B4RAdafruitNeoPixelEx_NEO_GBR</name>
+            <comment>&lt; @brief Green, Blue, Red color order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_BRG">B4RAdafruitNeoPixelEx_NEO_BRG</name>
+            <comment>&lt; @brief Blue, Red, Green color order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_BGR">B4RAdafruitNeoPixelEx_NEO_BGR</name>
+            <comment>&lt; @brief Blue, Green, Red color order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_WRGB">B4RAdafruitNeoPixelEx_NEO_WRGB</name>
+            <comment>&lt; @brief White, Red, Green, Blue order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_WRBG">B4RAdafruitNeoPixelEx_NEO_WRBG</name>
+            <comment>&lt; @brief White, Red, Blue, Green order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_WGRB">B4RAdafruitNeoPixelEx_NEO_WGRB</name>
+            <comment>&lt; @brief White, Green, Red, Blue order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_WGBR">B4RAdafruitNeoPixelEx_NEO_WGBR</name>
+            <comment>&lt; @brief White, Green, Blue, Red order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_WBRG">B4RAdafruitNeoPixelEx_NEO_WBRG</name>
+            <comment>&lt; @brief White, Blue, Red, Green order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_WBGR">B4RAdafruitNeoPixelEx_NEO_WBGR</name>
+            <comment>&lt; @brief White, Blue, Green, Red order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_RWGB">B4RAdafruitNeoPixelEx_NEO_RWGB</name>
+            <comment>&lt; @brief Red, White, Green, Blue order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_RWBG">B4RAdafruitNeoPixelEx_NEO_RWBG</name>
+            <comment>&lt; @brief Red, White, Blue, Green order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_RGWB">B4RAdafruitNeoPixelEx_NEO_RGWB</name>
+            <comment>&lt; @brief Red, Green, White, Blue order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_RGBW">B4RAdafruitNeoPixelEx_NEO_RGBW</name>
+            <comment>&lt; @brief Red, Green, Blue, White order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_RBWG">B4RAdafruitNeoPixelEx_NEO_RBWG</name>
+            <comment>&lt; @brief Red, Blue, White, Green order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_RBGW">B4RAdafruitNeoPixelEx_NEO_RBGW</name>
+            <comment>&lt; @brief Red, Blue, Green, White order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_GWRB">B4RAdafruitNeoPixelEx_NEO_GWRB</name>
+            <comment>&lt; @brief Green, White, Red, Blue order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_GWBR">B4RAdafruitNeoPixelEx_NEO_GWBR</name>
+            <comment>&lt; @brief Green, White, Blue, Red order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_GRWB">B4RAdafruitNeoPixelEx_NEO_GRWB</name>
+            <comment>&lt; @brief Green, Red, White, Blue order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_GRBW">B4RAdafruitNeoPixelEx_NEO_GRBW</name>
+            <comment>&lt; @brief Green, Red, Blue, White order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_GBWR">B4RAdafruitNeoPixelEx_NEO_GBWR</name>
+            <comment>&lt; @brief Green, Blue, White, Red order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_GBRW">B4RAdafruitNeoPixelEx_NEO_GBRW</name>
+            <comment>&lt; @brief Green, Blue, Red, White order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_BWRG">B4RAdafruitNeoPixelEx_NEO_BWRG</name>
+            <comment>&lt; @brief Blue, White, Red, Green order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_BWGR">B4RAdafruitNeoPixelEx_NEO_BWGR</name>
+            <comment>&lt; @brief Blue, White, Green, Red order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_BRWG">B4RAdafruitNeoPixelEx_NEO_BRWG</name>
+            <comment>&lt; @brief Blue, Red, White, Green order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_BRGW">B4RAdafruitNeoPixelEx_NEO_BRGW</name>
+            <comment>&lt; @brief Blue, Red, Green, White order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_BGWR">B4RAdafruitNeoPixelEx_NEO_BGWR</name>
+            <comment>&lt; @brief Blue, Green, White, Red order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+        <field>
+            <name DefineMethod="true" DesignerName="NEO_BGRW">B4RAdafruitNeoPixelEx_NEO_BGRW</name>
+            <comment>&lt; @brief Blue, Green, Red, White order.</comment>
+            <returntype>UInt</returntype>
+        </field>
+    </class>
+    <version>1</version>
+</root>

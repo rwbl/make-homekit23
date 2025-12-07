@@ -1,0 +1,140 @@
+﻿Build1=Default,com.rwblinn.hk32hmi
+File1=HMITileButton.bal
+File10=HMITileRGB.bal
+File11=HMITileSensor.bal
+File12=HMITileSlider.bal
+File13=MainPage.bal
+File2=HMITileClock.bal
+File3=HMITileEventviewer.bal
+File4=HMITileImage.bal
+File5=HMITileImageIcon.bal
+File6=HMITileLabel.bal
+File7=HMITileLevel.bal
+File8=HMITileList.bal
+File9=HMITileReadout.bal
+FileGroup1=Default Group
+FileGroup10=Default Group
+FileGroup11=Default Group
+FileGroup12=Default Group
+FileGroup13=Default Group
+FileGroup2=Default Group
+FileGroup3=Default Group
+FileGroup4=Default Group
+FileGroup5=Default Group
+FileGroup6=Default Group
+FileGroup7=Default Group
+FileGroup8=Default Group
+FileGroup9=Default Group
+Group=Default Group
+Library1=b4xpages
+Library2=ble2
+Library3=byteconverter
+Library4=core
+Library5=phone
+Library6=runtimepermissions
+Library7=xcustomlistview
+Library8=xui views
+Library9=b4xseekbarex
+ManifestCode='This code will be applied to the manifest file during compilation.~\n~'You do not need to modify it in most cases.~\n~'See this link for for more information: https://www.b4x.com/forum/showthread.php?p=78136~\n~AddManifestText(~\n~<uses-sdk android:minSdkVersion="5" android:targetSdkVersion="35"/>~\n~<supports-screens android:largeScreens="true" ~\n~    android:normalScreens="true" ~\n~    android:smallScreens="true" ~\n~    android:anyDensity="true"/>)~\n~SetApplicationAttribute(android:icon, "@drawable/icon")~\n~SetApplicationAttribute(android:label, "$LABEL$")~\n~CreateResourceFromFile(Macro, Themes.LightTheme)~\n~'End of default text.~\n~AddPermission(android.permission.ACCESS_FINE_LOCATION)~\n~AddPermission(android.permission.BLUETOOTH_SCAN)~\n~AddPermission(android.permission.BLUETOOTH_CONNECT)
+Module1=|relative|..\B4XMainPage
+Module10=|relative|..\..\Common\Dev\DevPIRSensor
+Module11=|relative|..\..\Common\Dev\DevRFID
+Module12=|relative|..\..\Common\Dev\DevRGBLED
+Module13=|relative|..\..\Common\Dev\DevWindow
+Module14=|relative|..\..\Common\Dev\DevYellowLed
+Module15=|relative|..\..\Common\HMI\Mods\HMITileButton
+Module16=|relative|..\..\Common\HMI\Mods\HMITileClock
+Module17=|relative|..\..\Common\HMI\Mods\HMITileDigitalClock
+Module18=|relative|..\..\Common\HMI\Mods\HMITileEventViewer
+Module19=|relative|..\..\Common\HMI\Mods\HMITileGridHelper
+Module2=|relative|..\..\Common\BLE\BLEConstants
+Module20=|relative|..\..\Common\HMI\Mods\HMITileImage
+Module21=|relative|..\..\Common\HMI\Mods\HMITileImageIcon
+Module22=|relative|..\..\Common\HMI\Mods\HMITileLabel
+Module23=|relative|..\..\Common\HMI\Mods\HMITileLevel
+Module24=|relative|..\..\Common\HMI\Mods\HMITileList
+Module25=|relative|..\..\Common\HMI\Mods\HMITileReadout
+Module26=|relative|..\..\Common\HMI\Mods\HMITileRGB
+Module27=|relative|..\..\Common\HMI\Mods\HMITileSensor
+Module28=|relative|..\..\Common\HMI\Mods\HMITileSlider
+Module29=|relative|..\..\Common\HMI\Mods\HMITileUtils
+Module3=|relative|..\..\Common\Utils\Convert
+Module30=Starter
+Module4=|relative|..\..\Common\Dev\DevBuzzer
+Module5=|relative|..\..\Common\Dev\DevDHT11
+Module6=|relative|..\..\Common\Dev\DevDoor
+Module7=|relative|..\..\Common\Dev\DevFan
+Module8=|relative|..\..\Common\Dev\DevGasSensor
+Module9=|relative|..\..\Common\Dev\DevMoistureSensor
+NumberOfFiles=13
+NumberOfLibraries=9
+NumberOfModules=30
+Version=13.4
+@EndOfDesignText@
+#Region  Project Attributes 
+	#ApplicationLabel: HK32HMI
+	#VersionCode: 1
+	#VersionName: Franz
+	'SupportedOrientations possible values: unspecified, landscape or portrait.
+	#SupportedOrientations: portrait
+	#CanInstallToExternalStorage: False
+#End Region
+
+#Region  Activity Attributes 
+	#FullScreen: True
+	#IncludeTitle: True
+	#BridgeLogger: True
+#End Region
+
+Sub Process_Globals
+	Public ActionBarHomeClicked As Boolean
+End Sub
+
+Sub Globals
+
+End Sub
+
+Sub Activity_Create(FirstTime As Boolean)
+	Dim pm As B4XPagesManager
+	pm.Initialize(Activity)
+End Sub
+
+'Template version: B4A-1.01
+#Region Delegates
+
+Sub Activity_ActionBarHomeClick
+	ActionBarHomeClicked = True
+	B4XPages.Delegate.Activity_ActionBarHomeClick
+	ActionBarHomeClicked = False
+End Sub
+
+Sub Activity_KeyPress (KeyCode As Int) As Boolean
+	Return B4XPages.Delegate.Activity_KeyPress(KeyCode)
+End Sub
+
+Sub Activity_Resume
+	B4XPages.Delegate.Activity_Resume
+End Sub
+
+Sub Activity_Pause (UserClosed As Boolean)
+	B4XPages.Delegate.Activity_Pause
+End Sub
+
+Sub Activity_PermissionResult (Permission As String, Result As Boolean)
+	B4XPages.Delegate.Activity_PermissionResult(Permission, Result)
+End Sub
+
+Sub Create_Menu (Menu As Object)
+	B4XPages.Delegate.Create_Menu(Menu)
+End Sub
+
+#if Java
+public boolean _onCreateOptionsMenu(android.view.Menu menu) {
+	 processBA.raiseEvent(null, "create_menu", menu);
+	 return true;
+	
+}
+#End If
+#End Region
+
+'Program code should go into B4XMainPage and other pages.

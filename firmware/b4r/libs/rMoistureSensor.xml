@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<root>
+    <doclet-version-NOT-library-version>1.00</doclet-version-NOT-library-version>
+    <class>
+        <name>B4R::B4RMOISTURESENSOR</name>
+        <shortname>MoistureSensor</shortname>
+        <comment>@file rMoistureSensor.h
+@brief B4R C++ wrapper for the Moisture Sensor Module.
+@note Tested with the Keyestudio Steam Sensor, Working Temperature: －10-70C, Interface Type: Analog Signal Output.
+@note This is an analog (digital) input module, also called rain, rain sensor.
+      The output is converted into a digital signal (DO) and an analog signal (AO) output.
+@version 1.0
+@date 2025-11-29
+@author Robert W. B. Linn (c) 2025 — MIT License</comment>
+        <event>MoistureDetected (Value As Int)</event>
+        <property>
+            <name>EventEnabled</name>
+            <comment>@brief Set/Get enabled state change event.</comment>
+            <returntype>bool</returntype>
+            <parameter>
+                <name>state</name>
+                <type>bool</type>
+            </parameter>
+        </property>
+        <method>
+            <name DesignerName="Initialize">Initialize</name>
+            <comment>@brief Initializes the sensor.
+@param pin - Input pin number.
+@param MoistureDetectedSub - Callback for the `MoistureDetected` event.</comment>
+            <returntype>B4R::void</returntype>
+            <parameter>
+                <name>pin</name>
+                <type>Byte</type>
+            </parameter>
+            <parameter>
+                <name>MoistureDetectedSub</name>
+                <type>SubVoidInt</type>
+            </parameter>
+        </method>
+        <method>
+            <name DesignerName="Read">Read</name>
+            <comment>@brief Read the sensor value 0-4095..
+@return int Sensor value.</comment>
+            <returntype>int</returntype>
+        </method>
+        <method>
+            <name DesignerName="ADC">ADC</name>
+            <comment>@brief Get the ADC value 0-4095.
+@return int ADC value.</comment>
+            <returntype>int</returntype>
+        </method>
+        <method>
+            <name DesignerName="DAC">DAC</name>
+            <comment>@brief Get the DAC value 0-255 (8-bit precision).
+@return int DAC value.</comment>
+            <returntype>int</returntype>
+        </method>
+        <method>
+            <name DesignerName="Voltage">Voltage</name>
+            <comment>@brief Get the voltage 0-3.3V.
+@return double Voltage value.</comment>
+            <returntype>double</returntype>
+        </method>
+        <field>
+            <name DesignerName="MIN_VALUE">MIN_VALUE</name>
+            <comment>@brief No moisture detected (ADC analog value 0).</comment>
+            <returntype>int</returntype>
+        </field>
+        <field>
+            <name DesignerName="DRY">DRY</name>
+            <comment>@brief No moisture detected alias.</comment>
+            <returntype>int</returntype>
+        </field>
+        <field>
+            <name DesignerName="MAX_VALUE">MAX_VALUE</name>
+            <comment>@brief Moisture detected (ADC max analog value 4095).</comment>
+            <returntype>int</returntype>
+        </field>
+    </class>
+    <version>1</version>
+</root>

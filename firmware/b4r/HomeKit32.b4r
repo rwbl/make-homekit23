@@ -1,0 +1,155 @@
+﻿Build1=Default,B4RDev,BLE
+Group=Default Group
+Library1=radafruitneopixelex
+Library10=rmfrc522mifare_i2c
+Library11=rmoisturesensor
+Library12=rmqtt
+Library13=resp32dht
+Library2=rbleserver
+Library3=rconvert
+Library4=rcore
+Library5=resp32buzzer
+Library6=resp32servo
+Library7=resp8266wifi
+Library8=rglobalstoreex
+Library9=rliquidcrystal_i2cex
+Module1=CommBLE
+Module10=DevPIRSensor
+Module11=DevRFID
+Module12=DevRGBLed
+Module13=DevServoDoor
+Module14=DevServoWindow
+Module15=DevSystem
+Module16=DevYellowLed
+Module17=GlobalStoreHandler
+Module18=MenuHandler
+Module19=MQTTClient
+Module2=CommMQTT
+Module20=MQTTTopics
+Module21=WiFiMgr
+Module3=DevBuzzer
+Module4=DevDHT11
+Module5=DevFan
+Module6=DevGasSensor
+Module7=DeviceMgr
+Module8=DevLCD1602
+Module9=DevMoisture
+NumberOfFiles=0
+NumberOfLibraries=13
+NumberOfModules=21
+Version=4
+@EndOfDesignText@
+#Region Module Header
+' ================================================================
+' File:        	homekit32.b4r
+' Project:     	make-homekit32
+' Brief:       	Main program handling device initialization and communication.
+' Date:        	2025-12-07
+' Author:      	Robert W.B. Linn (c) 2025 MIT
+'
+' Description:	This is the main application entry point for homekit32.
+'				It manages BLE, WiFi and MQTT connectivity.
+'				Designed to keep Main.b4r lean, event-driven, and modular.
+'
+' Conditionals:	Sets the communication backend: MQTT,BLE or MQTT or BLE.
+'
+' Hardware:		ESP32 Plus - Chip type: ESP32-D0WDQ6 (revision v1.1), Board selected ESP32 Wrover Kit (all versions), partition scheme: Huge App.
+'				Features: Wi-Fi, BT, Dual Core + LP Core, 240MHz, Vref calibration in eFuse, Coding Scheme None
+' Software:		B4R 4.00 (64 bit), arduino-cli 1.3.1, ESP32 board manager 3.3.3.
+'
+' BLE:			Payload format are byte arrays using format:
+'				[DeviceID][Command][Payload...]
+'
+' MQTT:			Topics and payload formats are defined in MQTTTopics.bas.
+'   			Each topic is mapped to an index for efficient dispatching.
+'   			Messages are dispatched via lightweight, non-blocking subs.
+'
+' Globalstore:	Supports up to 3 concurrent BLE/MQTT payloads (round-robin buffer).
+'				The payloads are buffered to support non-blocking operation.
+
+' Comms:		Messages are dispatched to the appropriate device handlers. 
+'				Each device has its own handler.
+'
+' Dependencies:
+'   			WiFiMgr             - WiFi connection management.
+'				CommBLE				- Handles BLE communication.
+'				CommMQTT			- Handles WiFi & MQTT communication.
+'   			MQTTClient          - Handles MQTT protocol and broker communication.
+'   			MQTTTopics          - Central topic and payload definitions.
+'   			GlobalStoreHandler  - Manages 5-slot MQTT payload buffer (round-robin).
+'   			DeviceMgr           - Provides access to hardware components.
+'   			DeviceHandlers      - Executes device-specific actions.
+'									- DevYellowLed etc.
+'
+' Libraries:	Communication:
+'				rESP8266WiFi - WiFi communication.
+'				rBLEServer - BLE communication.
+'				rMQTT - MQTT client.
+'
+'				Helper:
+'				rGlobalStoreEx - Global store used For MQTT message handling.
+'				rConvert - General purpose conversion functions.
+'
+'				Devices:
+'				rAdafruitNeoPixelEx - Control 8612 RGB LED with 4 pixels.
+'				rESP32Buzzer - Play tone / alarm melody.
+'				rESP32DHT - DHT11 sensor (supports DHT11/22).
+'				rESP32Servo - Servo control door & window.
+'				rLiquidCrystal_I2CEx - LCD 1602.
+'				rMFRC522Mifare_I2C - RFID reader Mifare cards/tags.
+'				rMoistureSensor - Steam sensor detecting moisture.
+' ================================================================
+#End Region
+
+#Region Project Attributes
+	#AutoFlushLogs: True
+	#CheckArrayBounds: True
+	#StackBufferSize: 600
+#End Region
+
+Sub Process_Globals
+	Private APP_VERSION As String	= "v20251207"
+	Private APP_NAME As String		= "HomeKit32"
+
+	' Communication
+	Private SerialLine As Serial
+End Sub
+
+Private Sub AppStart
+	SerialLine.Initialize(115200)
+	Log(CRLF, "[Main.AppStart][I]", APP_NAME, "][I] Starting ", APP_VERSION)
+
+	' Init global store handler
+	GlobalStoreHandler.Initialize
+	
+	' Init devices
+	DeviceMgr.Initialize
+
+	' Show app name & version on the lcd display
+	DisplayAppName
+
+	' Select communication backend using project conditional
+	#If MQTT
+	Log(CRLF, "[Main.AppStart][I] Communication backend: MQTT")
+	CommMQTT.Initialize
+	#End If
+	
+	#If BLE
+	Log(CRLF, "[Main.AppStart][I] Communication backend: BLE")
+	CommBLE.Initialize
+	#End If
+	
+	' Optional: enable or disable certain sensors state changed events
+	' Set all state changed events to false. Can be set by writing custom action for the device.
+	DevPIRSensor.Enabled(False)
+	DevDHT11.Enabled(False)
+	DevMoisture.Enabled(False)
+
+	Log(CRLF, "[Main.AppStart][I] Done")
+End Sub
+
+' Show app name version on the LCD1602
+Public Sub DisplayAppName
+	DevLCD1602.WriteAt(0, DevLCD1602.LCD_ROW_TOP, APP_NAME)
+	DevLCD1602.WriteAt(0, DevLCD1602.LCD_ROW_BOTTOM, APP_VERSION)
+End Sub

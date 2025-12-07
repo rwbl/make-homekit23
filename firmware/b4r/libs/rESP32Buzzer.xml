@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<root>
+    <doclet-version-NOT-library-version>1.00</doclet-version-NOT-library-version>
+    <class>
+        <name>B4R::B4RESP32BUZZER</name>
+        <shortname>ESP32Buzzer</shortname>
+        <comment>@file rESP32Buzzer.h
+@brief B4R C++ wrapper for a simple ESP32 buzzer/tone generator.
+@note Implementation uses esp_timer (high-resolution software timers) to
+      toggle the buzzer pin (square wave) with automatic duration handling.
+@version 1.0
+@date 2025-11-10
+@author
+  Robert W. B. Linn (c) 2025 — MIT License
+
+Remarks:
+ - AttachToTimer() is a no-op for hardware-timer allocation in this implementation.
+   The library uses `esp_timer` to avoid hardware-timer conflicts with other libraries
+   (e.g. servo timers). Keeping the method allows compatibility with calling code.</comment>
+        <property>
+            <name>Timbre</name>
+            <comment>Set/Get timbre (unused for passive buzzer but kept for API compatibility).</comment>
+            <returntype>Byte</returntype>
+            <parameter>
+                <name>duty_percent</name>
+                <type>Byte</type>
+            </parameter>
+        </property>
+        <method>
+            <name DesignerName="Initialize">Initialize</name>
+            <comment>@brief Initializes the buzzer wrapper and configures the pin.
+@param pin GPIO pin number used for the passive buzzer.</comment>
+            <returntype>B4R::void</returntype>
+            <parameter>
+                <name>pin</name>
+                <type>Byte</type>
+            </parameter>
+        </method>
+        <method>
+            <name DesignerName="PlayTone">PlayTone</name>
+            <comment>@brief Play a tone at given frequency (Hz) for duration (ms).
+       If duration_ms == 0, plays indefinitely until Stop() is called.
+@param freq Frequency in Hz (0 = stop)
+@param duration_ms Duration in milliseconds (0 = infinite)</comment>
+            <returntype>B4R::void</returntype>
+            <parameter>
+                <name>freq</name>
+                <type>ULong</type>
+            </parameter>
+            <parameter>
+                <name>duration_ms</name>
+                <type>ULong</type>
+            </parameter>
+        </method>
+        <method>
+            <name DesignerName="Stop">Stop</name>
+            <comment>Stop any currently playing tone immediately.</comment>
+            <returntype>B4R::void</returntype>
+        </method>
+        <method>
+            <name DesignerName="Off">Off</name>
+            <comment>Alias to stop</comment>
+            <returntype>B4R::void</returntype>
+        </method>
+        <method>
+            <name DesignerName="AttachToTimer">AttachToTimer</name>
+            <comment>@brief Attach to a "timer slot" (0..3). This implementation uses esp_timer
+       and does not reserve a hardware timer; method kept for API compatibility.</comment>
+            <returntype>B4R::void</returntype>
+            <parameter>
+                <name>slot</name>
+                <type>Byte</type>
+            </parameter>
+        </method>
+        <method>
+            <name DesignerName="PlayRing">PlayRing</name>
+            <comment>Convenience melodies (blocking while playing).</comment>
+            <returntype>B4R::void</returntype>
+            <parameter>
+                <name>repeats</name>
+                <type>UInt</type>
+            </parameter>
+        </method>
+        <method>
+            <name DesignerName="PlayBirthday">PlayBirthday</name>
+            <returntype>B4R::void</returntype>
+        </method>
+        <method>
+            <name DesignerName="PlayAlarm">PlayAlarm</name>
+            <returntype>B4R::void</returntype>
+            <parameter>
+                <name>mode</name>
+                <type>Byte</type>
+            </parameter>
+            <parameter>
+                <name>repeats</name>
+                <type>Byte</type>
+            </parameter>
+        </method>
+        <field>
+            <name DesignerName="NOTE_NONE">NOTE_NONE</name>
+            <comment>==================================================
+ CONSTANTS
+==================================================</comment>
+            <returntype>ULong</returntype>
+        </field>
+        <field>
+            <name DesignerName="NOTE_A3">NOTE_A3</name>
+            <returntype>ULong</returntype>
+        </field>
+        <field>
+            <name DesignerName="NOTE_A4">NOTE_A4</name>
+            <returntype>ULong</returntype>
+        </field>
+        <field>
+            <name DesignerName="NOTE_B3">NOTE_B3</name>
+            <returntype>ULong</returntype>
+        </field>
+        <field>
+            <name DesignerName="NOTE_B4">NOTE_B4</name>
+            <returntype>ULong</returntype>
+        </field>
+        <field>
+            <name DesignerName="NOTE_C4">NOTE_C4</name>
+            <returntype>ULong</returntype>
+        </field>
+        <field>
+            <name DesignerName="NOTE_D4">NOTE_D4</name>
+            <returntype>ULong</returntype>
+        </field>
+        <field>
+            <name DesignerName="NOTE_E4">NOTE_E4</name>
+            <returntype>ULong</returntype>
+        </field>
+        <field>
+            <name DesignerName="NOTE_F4">NOTE_F4</name>
+            <returntype>ULong</returntype>
+        </field>
+        <field>
+            <name DesignerName="NOTE_G3">NOTE_G3</name>
+            <returntype>ULong</returntype>
+        </field>
+        <field>
+            <name DesignerName="NOTE_G4">NOTE_G4</name>
+            <returntype>ULong</returntype>
+        </field>
+        <field>
+            <name DesignerName="ALARM_MODE_NONE">ALARM_MODE_NONE</name>
+            <comment>Alarm modes used for the function PlayAlarm</comment>
+            <returntype>Byte</returntype>
+        </field>
+        <field>
+            <name DesignerName="ALARM_MODE_POLICE_SIREN">ALARM_MODE_POLICE_SIREN</name>
+            <returntype>Byte</returntype>
+        </field>
+        <field>
+            <name DesignerName="ALARM_MODE_FIRE_ALARM">ALARM_MODE_FIRE_ALARM</name>
+            <returntype>Byte</returntype>
+        </field>
+        <field>
+            <name DesignerName="ALARM_MODE_WAIL_SWEEP">ALARM_MODE_WAIL_SWEEP</name>
+            <returntype>Byte</returntype>
+        </field>
+        <field>
+            <name DesignerName="ALARM_MODE_INTRUDER_ALARM">ALARM_MODE_INTRUDER_ALARM</name>
+            <returntype>Byte</returntype>
+        </field>
+        <field>
+            <name DesignerName="ALARM_MODE_DANGER_ALARM">ALARM_MODE_DANGER_ALARM</name>
+            <returntype>Byte</returntype>
+        </field>
+    </class>
+    <version>1</version>
+</root>

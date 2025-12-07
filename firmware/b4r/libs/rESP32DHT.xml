@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<root>
+    <doclet-version-NOT-library-version>1.00</doclet-version-NOT-library-version>
+    <class>
+        <name>B4R::B4RESP32DHT</name>
+        <shortname>ESP32DHT</shortname>
+        <comment>@file rESP32DHT.h
+@brief B4R C++ wrapper for the DHT11 &amp; DHT22 sensors connected to ESP32.
+@note This B4R Library is partly wrapped from project https://github.com/beegee-tokyo/arduino-DHTesp. Thanks to the author.
+@note Tested with the Keyestudio DHT11.
+@version 1.0
+@date 2025-11-19
+@author Robert W. B. Linn (c) 2025 — MIT License</comment>
+        <event>StateChanged (Temperature As Float, Humidity As Float)</event>
+        <property>
+            <name>EventEnabled</name>
+            <comment>Set/Get enabled state change event.</comment>
+            <returntype>bool</returntype>
+            <parameter>
+                <name>state</name>
+                <type>bool</type>
+            </parameter>
+        </property>
+        <method>
+            <name DesignerName="Initialize">Initialize</name>
+            <comment>@brief Initializes the DHT11 sensor.
+@param Mode - DHT11 or DHT22 sensor.
+@param Pin - Input pin number.
+@param StateChangedSub - Callback for the `StateChanged` event.</comment>
+            <returntype>B4R::void</returntype>
+            <parameter>
+                <name>Mode</name>
+                <type>Byte</type>
+            </parameter>
+            <parameter>
+                <name>Pin</name>
+                <type>Byte</type>
+            </parameter>
+            <parameter>
+                <name>StateChangedSub</name>
+                <type>SubVoidFloatFloat</type>
+            </parameter>
+        </method>
+        <method>
+            <name DesignerName="Temperature">Temperature</name>
+            <comment>Read temperature from DHT (Celsius).
+Returns nan if there was a failure.</comment>
+            <returntype>float</returntype>
+        </method>
+        <method>
+            <name DesignerName="Humidity">Humidity</name>
+            <comment>Read Humidity as Percentage from DHT.
+Returns nan if there was a failure.</comment>
+            <returntype>float</returntype>
+        </method>
+        <field>
+            <name DesignerName="DHT11">DHT11</name>
+            <comment>CONSTANTS</comment>
+            <returntype>Byte</returntype>
+        </field>
+        <field>
+            <name DesignerName="DHT22">DHT22</name>
+            <returntype>Byte</returntype>
+        </field>
+    </class>
+    <version>1</version>
+</root>
