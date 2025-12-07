@@ -1,4 +1,4 @@
-# TODO - make-homekit32
+# TODO make-homekit32
 
 ---
 
