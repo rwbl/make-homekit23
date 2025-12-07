@@ -79,7 +79,7 @@ Private Sub Process_Globals
 	' HMI Colors (ISA-101)
 	' ================================================================
 	' ================================================================
-	' ISA-101 LIGHT THEME COLOR SET (Corrected)
+	' ISA-101 LIGHT THEME COLOR SET
 	' ================================================================
 
 	' ================================================================
@@ -103,7 +103,7 @@ Private Sub Process_Globals
 	Public Const COLOR_STATUS_FORBIDDEN         As Int = 0xFF7F0000
 
 	' ================================================================
-	' HMITile STATES (NORMAL ON/OFF)
+	' Tile STATES (NORMAL ON/OFF)
 	' ================================================================
 	Public Const COLOR_STATE_OFF_BACKGROUND     As Int = 0xFFB0B0B0   	' same as default HMITile
 	Public Const COLOR_STATE_ON_BACKGROUND      As Int = 0xFF808080		' (15–20% darker)

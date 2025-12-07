@@ -291,8 +291,8 @@ Remaining bytes not used.
 | ---------- | ------------- | ------------------------------ | ---------------------| ---------------- |
 | 0x02 TODO  | GET_STATE     | none                           | `FF 02`              | System state     |
 | ->Response |               | 1 byte                         | `FF 02 01`           |                  |
-| 0x05       | CUSTOM_ACTION | 1 byte 		                  | `FF 05 00`           | Disable events   |
-| 0x05       | CUSTOM_ACTION | 1 byte 		                  | `FF 05 01`           | Enable events    |
+| 0x05       | CUSTOM_ACTION | 1 byte 		                  | `FF 05 01`           | Enable events   |
+| 0x05       | CUSTOM_ACTION | 1 byte 		                  | `FF 05 02`           | Disable events    |
 
 ---
 
