@@ -1,7 +1,7 @@
 ﻿Build1=Default,com.rwblinn.hk32commander
-File1=HMITileEventViewer.bal
+File1=HMITileEventviewer.bal
 File2=HMITileList.bal
-File3=mainpage.bal
+File3=MainPage.bal
 FileGroup1=Default Group
 FileGroup2=Default Group
 FileGroup3=Default Group
