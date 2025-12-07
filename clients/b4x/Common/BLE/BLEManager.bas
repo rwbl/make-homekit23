@@ -319,6 +319,7 @@ Public Sub Write(b() As Byte)
 		LastMsg = $"[BLEManager.Write][I] OK, data=${Convert.ByteConv.HexFromBytes(b)}"$
 		Log(LastMsg)
 	End If
+	Sleep(1)
 End Sub
 
 ' WriteData

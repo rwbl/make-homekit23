@@ -77,6 +77,7 @@ Public Sub Clear
 	mBLEMgr.WriteData(BLEConstants.SERVICE_UUID.ToLowerCase, _
 					 BLEConstants.CHAR_UUID_TX.ToLowerCase, _ 
 					 command)
+	Sleep(1)
 End Sub
 
 ' SetText
@@ -118,4 +119,5 @@ Public Sub SetText(row As Byte, col As Byte, text As String)
 	mBLEMgr.WriteData(BLEConstants.SERVICE_UUID.ToLowerCase, _
 					 BLEConstants.CHAR_UUID_TX.ToLowerCase, _ 
 					 command)
+	Sleep(1)
 End Sub

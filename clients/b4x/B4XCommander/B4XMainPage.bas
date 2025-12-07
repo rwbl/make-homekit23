@@ -65,13 +65,12 @@ Private Sub B4XPage_Created (Root1 As B4XView)
 	' Load layout case sensitive
 	Root.LoadLayout("MainPage")
 
-	' UI
-	B4XPages.SetTitle(Me, VERSION)
-
-	' CustomView require short sleep
+	' UI - CustomView require short sleep
 	Sleep(1)
-	' Add the list of commands
-	' Initialize Command List
+	B4XPages.SetTitle(Me, VERSION)
+	TileEventViewer.Title = $"Event Log"$
+
+	' Initialize & add the list of commands
 	Commands.Initialize
 	TileListCommandsAddAll
 
@@ -94,8 +93,20 @@ Private Sub B4XPage_Created (Root1 As B4XView)
 End Sub
 
 Private Sub B4XPage_Background
+	#if B4A
+	Disconnect
+	#End If
+
 	#if B4J
 	BLEMgr.PyBridgeKillProcess
+	#End If
+End Sub
+
+Private Sub B4XPage_Appear
+	#if B4A
+	If Not(IsConnected) Then
+		Connect
+	end if
 	#End If
 End Sub
 
@@ -222,7 +233,8 @@ End Sub
 ' ================================================================
 #Region B4J-BLE-MANAGER
 ' HandleBLEConnect
-' Set the connect button state.
+' Log the state.
+' For B4J disconnect is handled by the sub PyBridgeDisconnected.
 ' Parameters:
 '	state Boolean - True connected else disconnected
 Public Sub HandleBLEConnect(state As Boolean)

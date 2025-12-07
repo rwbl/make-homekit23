@@ -25,6 +25,6 @@ ModuleClosedNodes5=
 ModuleClosedNodes6=
 ModuleClosedNodes7=
 ModuleClosedNodes8=1
-NavigationStack=B4XMainPage,HandleBLEConnect,234,0,B4XMainPage,Connect,128,0,B4XMainPage,BLEMgr_DataAvailable,181,2,B4XMainPage,BLEMgr_Disconnected,174,5,HMITileEventViewer,Clear,293,0,Visual Designer,HMITileEventviewer.bal,-100,1,HMITileEventViewer,ClvEventsCreateItem,294,4,HMITileEventViewer,LabelTrash_Click,344,0,HMITileEventViewer,ClvEvents_ItemLongClick,346,1,HMITileEventViewer,ClvEvents_ItemClick,346,0,BLEConstants,Process_Globals,34,0
+NavigationStack=BLEConstants,Process_Globals,34,0,B4XMainPage,Class_Globals,48,0,B4XMainPage,Disconnect,159,0,B4XMainPage,TileListCommandsAddAll,265,0,B4XMainPage,TileListCommands_ItemClick,276,0,B4XMainPage,BLEMgr_StateChanged,223,0,B4XMainPage,BLEMgr_DeviceFound,170,0,B4XMainPage,B4XPage_Created,79,0,B4XMainPage,B4XPage_Background,91,3,B4XMainPage,B4XPage_Appear,108,2
 SelectedBuild=0
 VisibleModules=1,4,5,6,7,2,3

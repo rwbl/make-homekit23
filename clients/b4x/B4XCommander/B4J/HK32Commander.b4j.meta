@@ -25,6 +25,6 @@ ModuleClosedNodes5=
 ModuleClosedNodes6=
 ModuleClosedNodes7=
 ModuleClosedNodes8=
-NavigationStack=HMITileList,ClvListCreateItem,245,0,B4XMainPage,B4XPage_Background,91,0,B4XMainPage,TileListCommandsAddAll,254,0,B4XMainPage,HandleBLEConnect,227,2,B4XMainPage,HandleBLENotification,240,0,B4XMainPage,TileListCommands_ItemClick,265,6,B4XMainPage,PyBridgeDisconnected,218,0,B4XMainPage,B4XPage_Created,77,0,B4XMainPage,Class_Globals,30,0
+NavigationStack=B4XMainPage,TileListCommandsAddAll,254,0,B4XMainPage,TileListCommands_ItemClick,265,6,B4XMainPage,B4XPage_Background,94,0,B4XMainPage,B4XPage_Appear,104,6,B4XMainPage,HandleBLENotification,257,0,B4XMainPage,Class_Globals,47,0,B4XMainPage,Initialize,54,0,B4XMainPage,B4XPage_Created,64,0,B4XMainPage,PyBridgeDisconnected,110,0,B4XMainPage,HandleBLEConnect,236,6,HMITileEventViewer,Base_Resize,119,0
 SelectedBuild=0
 VisibleModules=1,5,2,3,4,6,7,8
