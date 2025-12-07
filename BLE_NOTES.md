@@ -64,9 +64,12 @@ Each device must have an unique ID.
 | 0x05      | CUSTOM_ACTION | Reserved / future use      |
 
 ---
+
 ### BLE Value/Payload
 List of device IDs, commands and payloads.
 List Device name (ID).
+
+---
 
 #### YellowLED (0x01)
 
@@ -81,12 +84,15 @@ List Device name (ID).
 #### RGB LED (0x02)
 
 | Command    | Name      | Payload                                | Example                                | Description                                                          |
-| ---------- | --------- | ------------------------------- ------ | -------------------------------------- | -------------------------------------------------------------------- |
+| ---------- | --------- | -------------------------------------- | -------------------------------------- | -------------------------------------------------------------------- |
 | 0x01       | SET_COLOR | 5 bytes (I,R,G,B,C)                    | `02 01 01 00 00 FF 01`                 | Set color Blue (FF) for pixel index 1 (01) and clear all pixels (01) |
 | 0x02       | GET_COLOR | none                                   | `02 02`                                | Request current color for all 4 pixels                               |
 | ->Response |           | 14 bytes (I,C,I,R,G,B,I,R,G,B,I,R,G,B) | `020200000000010000FF0200000003000000` | Reports current RGB color for all pixels. Pixel Blue all other off   |
 | 0x03       | SET_VALUE | 3 byte (R,G,B)                         | `02 03 00 00 FF`                       | Set color blue for all pixels                                        |
 | ->Response |           | 14 bytes (I,C,I,R,G,B,I,R,G,B,I,R,G,B) | `020200000000010000FF0200000003000000` | Reports current RGB color for all pixels. Pixel Blue all other off   |
+
+
+Abbreviations: I=Index, R=Red, G=Green, B=Blie, C=Clear
 
 ---
 
@@ -202,33 +208,33 @@ List Device name (ID).
 ---
 
 ##### LCD1602 Command SET VALUE 0x03:
+**Payload format <row><col><text length><text>**
+- 0x00 - 0x01 (1 Byte) - Row 0 - 1
+- 0x00 - 0x0F (1 Byte) - Col 0 - 15
+- 0x00 - 0x0F (1 Byte) - Text length
+- 0xNN, 0x... (N Bytes) - Text characters max 16
 ```
-Set text at row 0 (0x00) - 1 (0x01), col 0 (0x00) - 15 (0x0F), text length 0 (0x00) - 15 (0x0F)
-0x00 - 0x01 - Row 0 - 1
-0x00 - 0x0F - Col 0 - 15
-0x00 - 0x0F - Text length
-0xNN, 0x...	- Text
-Example: hello (5 bytes) at row 0, col 0
-	Example payload (10 bytes): 0x0C 0x03 0x00 0x00 0x05 0x68 0x65 0x6C 0x6C 0x6F
-					  Byte Pos: 0    1    2    3    4    5    6    7    8    9
-								ID   CMD  Row  Col  Len  h    e    l    l    o
+Example: display hello (5 bytes) at row 0, col 0
+Payload (10 bytes): 0x0C 0x03 0x00 0x00 0x05 0x68 0x65 0x6C 0x6C 0x6F
+          Byte Pos: 0    1    2    3    4    5    6    7    8    9
+					ID   CMD  Row  Col  Len  h    e    l    l    o
 ```
 
 ##### LCD1602 Command CUSTOM_ACTION 0x05: 
 ```
 0x01 (1 byte) = Clear display
-	Example payload (3 bytes): 0x0C 0x05 0x01
-					 Byte Pos: 0    1    2   
+Example payload (3 bytes): 0x0C 0x05 0x01
+				 Byte Pos: 0    1    2   
 0x02 0x00-0x01 (2 bytes) = Clear row (0x00) or on (0x01)
-	Example payload set clear botton row (row 1)(4 bytes): 0x0C 0x05 0x02 0x01
-					                             Byte Pos: 0    1    2    3    	
+Example payload set clear botton row (row 1)(4 bytes): 0x0C 0x05 0x02 0x01
+				                             Byte Pos: 0    1    2    3    	
 0x03 0x00-0x01 (2 bytes) = Set backlight off (0x00) or on (0x01)
-	Example payload set backlight off (4 bytes): 0x0C 0x05 0x03 0x00
-					                   Byte Pos: 0    1    2    3    	
+Example payload set backlight off (4 bytes): 0x0C 0x05 0x03 0x00
+				                   Byte Pos: 0    1    2    3    	
 TODO
 0x04 0x00-0xFF (2 bytes) = Set brightness
-	Example payload set full brightness (4 bytes): 0x0C 0x05 0x04 0xFF
-					                     Byte Pos: 0    1    2    3    	
+Example payload set full brightness (4 bytes): 0x0C 0x05 0x04 0xFF
+				                     Byte Pos: 0    1    2    3    	
 ```
 
 ---
@@ -300,4 +306,5 @@ Remaining bytes not used.
 | All GET commands trigger a BLE response message                              |                       |
 
 ---
+
 
