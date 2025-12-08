@@ -114,8 +114,8 @@ Public Sub ProcessMQTT(storeindex As Byte)
 	Dim payload() As Byte = GlobalStoreHandler.GetSlot(storeindex)
 
 	' Read the sensor value
-	Dim t As Float = Sensor.GetTemperature
-	Dim h As Float = Sensor.GetHumidity
+	Dim t As Float = Sensor.Temperature
+	Dim h As Float = Sensor.Humidity
 	PublishToMQTT(t, h)
 	Log("[DevDHT11.ProcessMQTT] storeindex=", storeindex, ", payload=", payload, ", t=", t, ", h=,", h)
 End Sub

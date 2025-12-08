@@ -9,7 +9,7 @@ Version=4
 ' File:         DevLCD1602.bas
 ' Project:      make-homekit32
 ' Brief:        Display text and messages on 16×2 LCD.
-' Date:         2025-11-12
+' Date:         2025-12-08
 ' Author:       Robert W.W. Linn (c) 2025 MIT
 ' Dependencies: rLiquidCrystal_I2C, rGlobalStoreEx
 ' Description:	Handles text display and message routing via MQTT.
@@ -19,10 +19,20 @@ Version=4
 
 Private Sub Process_Globals
 	Public Lcd As LiquidCrystalI2CEX				' Lib LiquidCrystalI2CEX
-	Private LCD_COLS As Byte = 16
-	Private LCD_ROWS As Byte = 2
-	Public LCD_ROW_TOP As Byte = 0
-	Public LCD_ROW_BOTTOM As Byte = 1
+	Private LCD_COLS As Byte		= 16
+	Private LCD_ROWS As Byte 		= 2
+	Public LCD_ROW_TOP As Byte 		= 0
+	Public LCD_ROW_BOTTOM As Byte	= 1
+	
+	' LCD Custom Characters
+	' Definitions
+	Private CUSTOM_CHAR_DEF_WIFI() As Byte 	= Array As Byte (0x0E,0x11,0x0E,0x11,0x0E,0x0E,0x04,0x00)
+	Private CUSTOM_CHAR_DEF_MQTT() As Byte 	= Array As Byte (0x0E,0x11,0x11,0x1F,0x08,0x08,0x00,0x00)
+	Private CUSTOM_CHAR_DEF_BLE() As Byte	= Array As Byte (0x08,0x0C,0x06,0x0C,0x06,0x0C,0x08,0x00)
+	' IDs
+	Public CUSTOM_CHAR_WIFI As Byte	= 0
+	Public CUSTOM_CHAR_MQTT As Byte	= 1
+	Public CUSTOM_CHAR_BLE As Byte 	= 2
 End Sub
 
 ' Initialize
@@ -31,7 +41,13 @@ End Sub
 '   address - I2C address
 Public Sub Initialize(address As Byte)
 	Lcd.Initialize(address, LCD_COLS, LCD_ROWS)
+	' Custom Chracters
+	Lcd.CreateChar(CUSTOM_CHAR_WIFI, CUSTOM_CHAR_DEF_WIFI)
+	Lcd.CreateChar(CUSTOM_CHAR_MQTT, CUSTOM_CHAR_DEF_MQTT)
+	Lcd.CreateChar(CUSTOM_CHAR_BLE, CUSTOM_CHAR_DEF_BLE)
+	' Backlight on
 	Lcd.Backlight = True
+	' Clear display
 	Lcd.Clear
 	Log("[DevLCD1602.Initialize][I] OK, address=", Convert.OneByteToHex(address), ", cols=", LCD_COLS, ", rows=", LCD_ROWS)
 End Sub
@@ -66,6 +82,17 @@ End Sub
 '	message - String or Number to display.
 Public Sub WriteAt(col As Byte, row As Byte, message As String)
 	Lcd.WriteAt(col, row, message)
+End Sub
+
+' WriteCharAt
+' Write Custom Character at position
+' Parameters:
+'   col - Column 0-15.
+'	row - Row 0-1.
+'	id - Custom character id 0-7
+Public Sub WriteCharAt(col As Byte, row As Byte, id As Byte)
+	if id < 0 or id > 7 then return
+	Lcd.WriteCharAt(col, row, id)
 End Sub
 #End Region
 

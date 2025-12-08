@@ -46,13 +46,14 @@ Private Sub Process_Globals
 	Public CMD_CUSTOM_ACTION As Byte	= 0x05
 	
 	' BLE ESP32 Plus BLE Peripheral + GATT Server
-	Private BLE_SERVER_NAME As String 	= "HomeKit32"	
-	Private BLEServer As BLEServer
-	Private MTUSize As UInt = BLEServer.MTU_SIZE_MIN
+	Private BLE_SERVER_NAME As String 	= "HomeKit32"	'ignore
+	Private BLEServer As BLEServer						'ignore
+	Private MTUSize As UInt = BLEServer.MTU_SIZE_MIN	'ignore
 End Sub
 
+#if BLE
 ' Initialize
-' Initializes WiFi and MQTT, connects, and subscribes to topics.
+' Initializes BLE
 Public Sub Initialize
 	Log("[CommBLE.Initialize]")
 	BLEServer.Initialize(BLE_SERVER_NAME, "BLEServer_NewData", "BLEServer_Error", MTUSize)
@@ -153,3 +154,5 @@ Private Sub BLEDispatch(deviceid As Byte)
 	End Select
 End Sub
 #End Region
+
+#End If

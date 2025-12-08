@@ -1,0 +1,119 @@
+﻿AppType=StandardJava
+Build1=Default,b4j.example
+Group=Default Group
+Library1=byteconverter
+Library2=jcore
+Library3=jmqtt
+Library4=jmqttbroker2
+Library5=javaobject
+NumberOfFiles=0
+NumberOfLibraries=5
+NumberOfModules=0
+Version=10.3
+@EndOfDesignText@
+#Region Project Header
+' ================================================================
+' File:        	HK32Broker.b4r
+' Project:     	make-homekit32
+' Brief:       	Main program HomeKit32 MQTT Broker.
+' Description:	This is a Non-UI application (console / server application) acting as a MQTT Broker for the HomeKit32 device (B4R).
+'				It manages BLE, WiFi and MQTT connectivity.
+'				Designed to keep Main.b4r lean, event-driven, and modular.
+'				In B4R the MQTT broker IP and port are set (module MQTTClient).
+' Date:        	2025-12-08
+' Author:      	Robert W.B. Linn (c) 2025 MIT
+' Notes:		The MQTT client ID is mandatory. If not given, error message like:
+' 				Broker doesn't permit MQTT empty client ID. Username: null, ...
+'				Use global flag to see detailed MQTT broker messages: MQTT_BROKER_DEBUG_LOG
+' MQTT Client:	Example commands using the mosquitto client with client ID hk32client.
+'				Turn YellowLED on:
+'				c:\Prog\mosquitto\mosquitto_pub.exe -i hk32client -t homekit32/home1/yellow_led/set -m {\"s\":\"on\"}
+' Libraries:	Communication:
+'				rMQTT - MQTT client.
+'				rMqttBroker - MQTT broker http://www.b4x.com/android/forum/threads/mqttbroker.61548/.
+'
+'				Helper:
+'				ByteConverter - General purpose byte conversion conversion functions. Not really required as MQTT payloads are JSON strings.
+' ================================================================
+#End Region
+
+#Region  Project Attributes 
+	#CommandLineArgs:
+	#MergeLibraries: True 
+#End Region
+
+Sub Process_Globals
+	Private MQTT_PORT As Int = 1883
+	Private MQTT_TOPIC_SUBSCRIBED As String = "homekit32/#"
+	Private MQTT_BROKER_DEBUG_LOG As Boolean = False
+
+	Private Broker As MqttBroker
+	Private Client As MqttClient
+
+	'Helper
+	Private bc As ByteConverter	'ignore
+End Sub
+
+Sub AppStart(Args() As String)
+	Log("[Main.AppStart][I] HomeKit32 Broker Starting")
+	Log($"[Main.AppStart][I] Broker IP ${LocalHostIP}"$)
+
+	' Start MQTT Broker on localhost:1883
+	Log($"[Main.AppStart][I] Broker initialize on port ${MQTT_PORT}"$)
+	Broker.Initialize("", MQTT_PORT)
+	Broker.DebugLog = MQTT_BROKER_DEBUG_LOG
+	Log("[Main.AppStart][I] Broker started")
+	Broker.Start
+	' Connect internal MQTT client to self
+	Client.Initialize("MQTT", "tcp://127.0.0.1:1883", "bridge_client")
+	' Client.Initialize("MQTT", "tcp://127.0.0.1:51041", "bridge_client")
+	Client.Connect
+	Log("[Main.AppStart][I] MQTT internal client connected")
+
+	StartMessageLoop
+	Log("[Main.AppStart] Done")
+End Sub
+
+'=======================================================================
+' MQTT
+'=======================================================================
+
+' MQTT connected
+Sub MQTT_Connected(Success As Boolean)
+	If Success Then
+		Log($"[Main.MQTT_Connected][I] OK. Subscribed to ${MQTT_TOPIC_SUBSCRIBED}"$)
+		Client.Subscribe(MQTT_TOPIC_SUBSCRIBED, 0)
+	Else
+		Log("[Main.MQTT_Connected][E] Failed to connect.")
+	End If
+End Sub
+
+' MQTT message received.
+' Parameters:
+'	Topic String - Topic received
+'	Payload Byte Array - Payload as string with JSON key:value pair.
+' Example turning YellowLED on:
+' [MQTT_MessageArrived][I] Topic=homekit32/home1/yellow_led/set, Payload={"s":"on"}
+Sub MQTT_MessageArrived(Topic As String, Payload() As Byte)
+	Dim p As String = BytesToString(Payload, 0, Payload.Length, "UTF8")
+	Log($"[MQTT_MessageArrived][I] Topic=${Topic}, Payload=${p}"$)
+	' Log($"[MQTT_MessageArrived][I] Topic=${Topic}, Payload=${bc.HexFromBytes(Payload)}"$)
+End Sub
+
+'=======================================================================
+' Helper
+'=======================================================================
+
+' Get local host IP address. Used for remote clients to connect.
+' [LocalHostIP] address=192.168.1.94
+Public Sub LocalHostIP As String
+	Dim result As String
+	Dim joInetAddress As JavaObject
+
+	joInetAddress.InitializeStatic("java.net.InetAddress")
+	Dim joLocalHost As JavaObject = joInetAddress.RunMethod("getLocalHost", Null)
+	Dim joHostAddress As Object = joLocalHost.RunMethod("getHostAddress", Null)
+	result = joHostAddress
+	' Log($"[LocalHostIP] address=${result}"$)
+	Return result
+End Sub

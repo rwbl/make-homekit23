@@ -71,7 +71,7 @@ Features: Wi-Fi, BT, Dual Core + LP Core, 240MHz, Vref calibration in eFuse, Cod
 - [RFID module](https://wiki.keyestudio.com/Ks0067_keyestudio_RC522_RFID_Module_for_Arduino) - Mifare supported
 - [RGB LED](https://www.keyestudio.com/products/keyestudio-6812-rgb-module-for-arduino-diy-programming-projects-compatible-lego-blocks) - 4 Neo Pixels
 - [Steam sensor](https://wiki.keyestudio.com/Ks0203_keyestudio_Steam_Sensor)
-- [Temperature/Humidity sensor](https://https://wiki.keyestudio.com/Ks0034_keyestudio_DHT11_Temperature_and_Humidity_Sensor)  - DHT11/DHT22 depending on kit version
+- [Temperature/Humidity sensor](https://https://wiki.keyestudio.com/Ks0034_keyestudio_DHT11_Temperature_and_Humidity_Sensor) - DHT11/DHT22 depending on kit version
 - [Yellow LED](https://wiki.keyestudio.com/Ks0234_keyestudio_Yellow_LED_Module)
 **Notes**
 - Keyestudio [Wiki](https://wiki.keyestudio.com/Main_Page) - Reference for all devices.
@@ -82,47 +82,47 @@ Follow the Keyestudio KS5009 guide and ensure all sensors/actuators are wired co
 
 2. Flash the Firmware
 Requirements:
-- B4R 4.00 (recommended)
-- B4R Conditional Communication Mode: BLE or MQTT or BLE,MQTT
-- Arduino-CLI 1.3.1
-- ESP32 board definitions (min 3.3.3)
-- Board: **ESP32 Wrover Kit (all versions)**
-- Partition scheme: **Huge App**
+- B4R 4.00 (recommended).
+- B4R Conditional Symbols for Communication Mode: BLE or MQTT or BLE,MQTT.
+- Additional Libraries: Copy libs folder to B4R additional libraries folder (be aware that existing libraries will be overwritten, make a backup first).
+- Arduino-CLI 1.3.1.
+- ESP32 board definition 3.3.4.
+- Board: **ESP32 Wrover Kit (all versions)**.
+- Partition scheme: **Huge App**.
 
 3. Configure MQTT Broker (optional)
 Supported setups:
-- Local Mosquitto installation
-- Raspberry Pi broker
-- Home Assistant MQTT add-on
+- Local Mosquitto installation.
+- Raspberry Pi broker.
+- Home Assistant MQTT add-on.
 
 4. Connect a Client
-- B4J 
-- B4A
-- Python GUI client
+- B4J.
+- B4A.
+- Python GUI client.
 
 ## Development Information
-
-Documentation for developers who want to extend the firmware or build custom clients.
+Additional documentation for developers who want to extend the firmware or build custom clients.
 
 ### DEV_NOTES.md
 Development and contribution guidelines.
 - Naming and module structure.
 - B4R coding conventions.
 - C++ library integration rules.
-- Tips for BLE/MQTT devugging
+- Tips for BLE/MQTT debugging.
 
 ### BLE_NOTES.md
 Describes:
-- Services and characteristics
-- Packet framing format
-- Commands and response structure
-- Notification structure
+- Services and characteristics.
+- Packet framing format.
+- Commands and response structure.
+- Notification structure.
 
 ### MQTT_NOTES.md
 Describes:
-- Topic layout and naming rules
-- QoS recommendations
-- Payload structures
+- Topic layout and naming rules.
+- QoS recommendations.
+- Payload structures.
 
 ## Future Roadmap
 
@@ -135,11 +135,12 @@ Describes:
 
 ## Credits
 
-- Keyestudio – KS5009 IoT Kit.
+- Keyestudio – Keyestudio Smart Home Kit (KS5009).
 - Anywhere Software – B4X development tools.
 - Open-source libraries and examples that inspired parts of this project.
 
 ## License
+- HomeKit32 - Released under the MIT License — Copyright © 2025 Robert W.W. Linn. See LICENSE for details.
+- Adafruit NeoPixel Library (partially wrapped for rAdafruitNeoPixelEx) - GNU Lesser General Public License as published by the Free Software Foundation.
 
-Released under the MIT License — Copyright © 2025 Robert W.W. Linn.
-See LICENSE for details.
+

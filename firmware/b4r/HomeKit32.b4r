@@ -1,4 +1,4 @@
-﻿Build1=Default,B4RDev,BLE
+﻿Build1=Default,B4RDev,MQTT
 Group=Default Group
 Library1=radafruitneopixelex
 Library10=rmfrc522mifare_i2c
@@ -44,18 +44,19 @@ Version=4
 ' File:        	homekit32.b4r
 ' Project:     	make-homekit32
 ' Brief:       	Main program handling device initialization and communication.
-' Date:        	2025-12-07
+' Date:        	2025-12-08
 ' Author:      	Robert W.B. Linn (c) 2025 MIT
 '
 ' Description:	This is the main application entry point for homekit32.
 '				It manages BLE, WiFi and MQTT connectivity.
 '				Designed to keep Main.b4r lean, event-driven, and modular.
 '
-' Conditionals:	Sets the communication backend: MQTT,BLE or MQTT or BLE.
+' Conditionals:	Sets the communication backend (3 options): MQTT,BLE or MQTT or BLE.
+'				Project > Build Configurations > Conditional Symbols.
 '
 ' Hardware:		ESP32 Plus - Chip type: ESP32-D0WDQ6 (revision v1.1), Board selected ESP32 Wrover Kit (all versions), partition scheme: Huge App.
 '				Features: Wi-Fi, BT, Dual Core + LP Core, 240MHz, Vref calibration in eFuse, Coding Scheme None
-' Software:		B4R 4.00 (64 bit), arduino-cli 1.3.1, ESP32 board manager 3.3.3.
+' Software:		B4R 4.00 (64 bit), arduino-cli 1.3.1, ESP32 board manager 3.3.4.
 '
 ' BLE:			Payload format are byte arrays using format:
 '				[DeviceID][Command][Payload...]
@@ -108,7 +109,7 @@ Version=4
 #End Region
 
 Sub Process_Globals
-	Private APP_VERSION As String	= "v20251207"
+	Private APP_VERSION As String	= "v20251208"
 	Private APP_NAME As String		= "HomeKit32"
 
 	' Communication
@@ -152,4 +153,13 @@ End Sub
 Public Sub DisplayAppName
 	DevLCD1602.WriteAt(0, DevLCD1602.LCD_ROW_TOP, APP_NAME)
 	DevLCD1602.WriteAt(0, DevLCD1602.LCD_ROW_BOTTOM, APP_VERSION)
+
+	#If BLE
+	DevLCD1602.WriteAt(15, DevLCD1602.LCD_ROW_TOP, "B")
+	' DevLCD1602.WriteCharAt(15, DevLCD1602.LCD_ROW_TOP, DevLCD1602.CUSTOM_CHAR_BLE)
+	#end if
+	#If MQTT
+	DevLCD1602.WriteAt(15, DevLCD1602.LCD_ROW_TOP, "M")
+	'DevLCD1602.WriteCharAt(15, DevLCD1602.LCD_ROW_TOP, DevLCD1602.CUSTOM_CHAR_WIFI)
+	#end if
 End Sub
