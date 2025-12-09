@@ -1,6 +1,6 @@
 ﻿ModuleBookmarks0=
 ModuleBreakpoints0=
 ModuleClosedNodes0=
-NavigationStack=Main,B4JCall,135,0,Main,Process_Globals,13,0,Main,btnExecute_Click,104,2,Main,SendToHK32,121,0,Main,AppLog,134,0,Main,OnReceiveCode,98,0,Main,GetEngine,160,0,Main,WebViewBlockly_Event,86,6,Main,WebViewBlockly_PageFinished,75,6
+NavigationStack=Main,AppStart,26,0,Main,AppInit,43,1,Main,WebViewBlockly_PageFinished,63,6,Main,WebViewBlockly_Event,85,6,Main,Process_Globals,17,0,Main,GetEngine,124,0,Main,btnExecute_Click,109,6,Main,AppLog,113,0,Visual Designer,MainLayout.bjl,-100,6,Main,btnClearLog_Click,111,2
 SelectedBuild=0
 VisibleModules=

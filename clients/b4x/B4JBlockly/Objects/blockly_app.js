@@ -1,3 +1,7 @@
+/*
+	HomeKit32 App
+*/
+
 window.onload = function () {
 
     // Inject Blockly
@@ -5,6 +9,7 @@ window.onload = function () {
         toolbox: document.getElementById('toolbox')
     });
 
+	/*
     // WebSocket for B4J
     window.b4j_ws = new WebSocket("ws://127.0.0.1:18888/hk32");
 
@@ -21,8 +26,25 @@ window.onload = function () {
 		// window.b4j_ws.send(JSON.stringify(obj));
 		window.b4j.JavaReceive(JSON.stringify(obj));
     };
+	*/
 
-	document.getElementById('btnGenerate').onclick = async function() {
+	// Run all blocks sequentially
+	async function runBlockQueue(blocks) {
+		for (const fn of blocks) {
+			if (typeof fn === "function") {
+				await fn(); // execute async block
+			}
+		}
+	}
+
+	// Send command to B4J (here just alert for testing)
+	async function sendCommandToB4JAsync(obj) {
+		alert(JSON.stringify(obj));
+	}
+
+
+
+	document.getElementById('btnRun').onclick = async function() {
 		const topBlocks = workspace.getTopBlocks(true);
 		const queue = [];
 

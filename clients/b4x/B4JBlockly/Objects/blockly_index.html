@@ -21,13 +21,20 @@
 	<category name="HomeKit32" colour="120">
 		<block type="yellow_on"></block>
 		<block type="yellow_off"></block>
+		<block type="yellow_led"></block>		<!-- indicator block -->
 		<block type="open_door"></block>
+		<block type="dht11_sensor"></block>		<!-- indicator block -->
 		<block type="delay"></block>
     </category>
 	
 	<!-- Standard Blockly blocks -->
-	
-	<category name="Variables" custom="VARIABLE"></category>
+	<category name="Program Flow" colour="0">
+		<block type="start_block"></block>
+		<block type="stop_block"></block>
+	</category>
+
+	<category name="Variables" custom="VARIABLE">
+	</category>
 
 	<!-- Loops -->
 	<category name="Loops" colour="120">
@@ -81,13 +88,17 @@
 <div id="blocklyDiv"></div>
 
 <div id="buttons">
-  <button id="btnGenerate">Generate Code</button>
+  <button id="btnRun">Run</button>
   <button id="btnSaveWorkspace">Save Workspace</button>
   <button id="btnLoadWorkspace">Load Workspace</button>
 </div>
 
 <!-- LOAD JS AFTER HTML, IMPORTANT! -->
 <script src="blockly_custom_blocks.js"></script>
+<script src="blockly_standard_blocks.js"></script>
+<script src="blockly_generators.js"></script>
+<script src="blockly_device_states.js"></script>
+
 <script src="blockly_app.js"></script>
 
 </body>
