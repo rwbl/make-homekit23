@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Blockly Test</title>
+
+<script src="https://unpkg.com/blockly@8.0.0/blockly.min.js"></script>
+
+<style>
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  #blocklyDiv { height: 90%; width: 100%; }
+  #buttons { height: 10%; padding: 5px; }
+</style>
+</head>
+
+<body>
+
+<!-- Needed for Blockly -->
+<xml id="toolbox" style="display:none">
+	<!-- HK32 custom blocks -->
+	<category name="HomeKit32" colour="120">
+		<block type="connect"></block>
+		<block type="disconnect"></block>
+		<block type="yellow_led_on"></block>
+		<block type="yellow_led_off"></block>
+		<block type="yellow_led"></block>		<!-- indicator block -->
+		<block type="open_door"></block>
+		<block type="dht11_sensor"></block>		<!-- indicator block -->
+		<block type="delay"></block>
+    </category>
+	
+	<!-- Standard Blockly blocks -->
+	<category name="Program Flow" colour="0">
+		<block type="start_block"></block>
+		<block type="stop_block"></block>
+	</category>
+
+	<category name="Variables" custom="VARIABLE">
+	</category>
+
+	<!-- Loops -->
+	<category name="Loops" colour="120">
+		<!-- Repeat Loop -->
+		<block type="repeat_loop">
+			<value name="TIMES">
+				<block type="math_number">
+					<field name="NUM">5</field>
+				</block>
+			</value>
+		</block>
+
+		<!-- While Loop -->
+		<block type="while_loop"></block>
+	</category>
+
+	<!-- Logic -->
+	<category name="Logic" colour="210">
+		<block type="logic_boolean_custom"></block>
+		<block type="logic_compare_custom"></block>
+	</category>
+
+	<!-- Math numbers -->
+	<category name="Math" colour="230">
+		<block type="math_number">
+			<field name="NUM">0</field>
+		</block>
+	</category>
+
+</xml>
+
+<!-- Add inside <body> -->
+<div id="variableDialog" style="
+    display:none;
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform: translate(-50%, -50%);
+    background:white;
+    border: 2px solid #444;
+    padding: 20px;
+    z-index:1000;
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+">
+    <label for="varNameInput">Variable name:</label>
+    <input id="varNameInput" type="text" />
+    <button id="btnVarOK">OK</button>
+    <button id="btnVarCancel">Cancel</button>
+</div>
+
+<div id="blocklyDiv"></div>
+
+<div id="buttons">
+  <button id="btnRun">Run</button>
+  <button id="btnSaveWorkspace">Save Workspace</button>
+  <button id="btnLoadWorkspace">Load Workspace</button>
+</div>
+
+<!-- LOAD JS AFTER HTML, IMPORTANT! -->
+<script src="blockly_custom_blocks.js"></script>
+<script src="blockly_standard_blocks.js"></script>
+<script src="blockly_generators.js"></script>
+<script src="blockly_device_states.js"></script>
+<script src="blockly_app.js"></script>
+
+</body>
+</html>
