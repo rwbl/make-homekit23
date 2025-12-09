@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Blockly Test</title>
+
+<!-- Blockly core -->
+<script src="https://unpkg.com/blockly@8.0.0/blockly.min.js"></script>
+
+<style>
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  #blocklyDiv { height: 90%; width: 100%; }
+  #buttons { height: 10%; padding: 5px; }
+</style>
+</head>
+<body>
+
+<div id="blocklyDiv"></div>
+<div id="buttons">
+  <button id="btnGenerate">Generate Code</button>
+</div>
+
+<script>
+  // --- 1️⃣ Define a simple custom block ---
+  Blockly.defineBlocksWithJsonArray([
+    {
+      "type": "open_door",
+      "message0": "Open Door",
+      "previousStatement": null,
+      "nextStatement": null,
+      "colour": 160
+    }
+  ]);
+
+  // --- 2️⃣ Modern code generator ---
+  Blockly.JavaScript['open_door'] = function(block) {
+    return "console.log('Door opened');\n";
+  };
+
+  // --- 3️⃣ Inject Blockly workspace ---
+  var workspace = Blockly.inject('blocklyDiv', {
+    toolbox: `<xml>
+                <block type="open_door"></block>
+              </xml>`
+  });
+
+  // --- 4️⃣ Button: generate code ---
+  document.getElementById('btnGenerate').addEventListener('click', function() {
+    var code = Blockly.JavaScript.workspaceToCode(workspace);
+    console.log("Generated code:\n" + code);
+    alert("Generated code:\n" + code);
+  });
+</script>
+
+</body>
+</html>

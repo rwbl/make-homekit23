@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Blockly HomeKit32</title>
+
+<!-- Blockly core -->
+<script src="https://unpkg.com/blockly@8.0.0/blockly.min.js"></script>
+
+<!-- Custom blocks -->
+<script src="blockly_custom_blocks.js"></script>  <!-- define blocks + generators -->
+<script src="blockly_app.js"></script>           <!-- inject workspace + buttons -->
+
+<style>
+html, body { height: 100%; margin: 0; overflow: hidden; }
+#blocklyDiv { height: 90%; width: 100%; }
+#buttons { height: 10%; width: 100%; padding: 5px; }
+</style>
+</head>
+<body>
+
+<div id="blocklyDiv"></div>
+
+<div id="buttons">
+  <button onclick="generateCode()">Generate Code</button>
+  <button onclick="saveWorkspace()">Save Workspace</button>
+</div>
+
+</body>
+</html>
