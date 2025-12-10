@@ -1,5 +1,11 @@
 /*
-	HomeKit32 Generators
+	Project:	HomeKit32
+	File:		blockly_generators.js
+	Brief:		Handle block actions.
+				Actions, in form of commands (JSON string) are send to B4J using the redirected alert function.
+				Example:
+				Set the state of the Yellow LED by sending JSON formatted command { command: "yellow_led_on"  }.
+				In B4J the JSON string is parsed and the command executed.
 */
 
 // ======================================================================
@@ -149,17 +155,3 @@ Blockly.prompt = async function(message, defaultValue, callback) {
     const name = await showVariableDialog(defaultValue);
     callback(name); // pass the result back to Blockly
 };
-
-// Called from B4J to update block state
-function updateDeviceState(blockType, state) {
-    const allBlocks = workspace.getAllBlocks();
-    allBlocks.forEach(block => {
-        if (block.type === blockType) {
-            // Update color or dropdown depending on state
-            if (blockType === "yellow_led") {
-                block.setFieldValue(state, "STATE");      // update dropdown
-                block.setColour(state === "ON" ? 90 : 60); // update color
-            }
-        }
-    });
-}

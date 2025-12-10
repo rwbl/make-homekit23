@@ -7,7 +7,7 @@ Version=9.85
 #Region Class Header
 ' File:			HK32Blockly
 ' Brief:		Client controlling the HomeKit32 via BLE using Blockly.
-' Date:			2025-12-07
+' Date:			2025-12-10
 ' Author:		Robert W.B. Linn (c) 2025 MIT
 ' Description:	This B4J application (app) connects as a client with an ESP32 running as Bluetooth Low Energy (BLE) server.
 '				The BLE-Server advertises DHT22 sensor data temperature & humidity and listens to commands send from connected clients.
@@ -34,15 +34,26 @@ Version=9.85
 #End Region
 
 Private Sub Class_Globals
-	Private Const VERSION As String = "HK32Blockly v20251209"
-	
+	Private Const VERSION As String = "HK32Blockly v20251210"
+	Private Const COPYRIGHT As String = "HomeKit32 Blockly Example by Robert W.B. Linn (c) 2025 MIT"
+		
+	Private Const WORKSPACE_DEFAULT_FILE As String = "workspace.xml"
+
+	' Core
+	Private fx As JFX
+		
 	' UI
-	Private Root As B4XView
 	Private xui As XUI
+	Private Root As B4XView
 	Private TileEventViewer As HMITileEventViewer
 	Private PaneBlockly As B4XView
 	Private WebViewBlockly As WebView
+	Private PaneToolbar As B4XView
+	Private ButtonRun As B4XView
+	Private ButtonSave As B4XView
+	Private ButtonLoad As B4XView
 	Private ButtonTest As B4XView
+	Private LabelInfo As B4XView
 
 	' BLE
 	#if B4A
@@ -73,7 +84,9 @@ Private Sub B4XPage_Created (Root1 As B4XView)
 	Root.LoadLayout("MainPage")
 
 	' UI - CustomView require short sleep
+	LabelInfo.Text = COPYRIGHT
 	PaneBlockly.Color = HMITileUtils.COLOR_TILE_NORMAL_BACKGROUND
+	PaneToolbar.Color = HMITileUtils.COLOR_TILE_NORMAL_BACKGROUND
 	Sleep(1)
 	B4XPages.SetTitle(Me, VERSION)
 	TileEventViewer.Title = $"Event Log"$
@@ -288,7 +301,7 @@ Private Sub WebViewBlockly_PageFinished (Url As String)
 	' (This makes JS alert messages appear in your B4J logs via WebViewBlockly_Event.)
 	Dim ev As Object = engine.CreateEvent("javafx.event.EventHandler", "WebViewBlockly", False)
 	engine.RunMethod("setOnAlert", Array(ev))
-	TileEventViewer.Insert($"[WebViewBlockly_PageFinished] alert redirection for receiving generated code"$, HMITileUtils.EVENT_LEVEL_INFO)
+	TileEventViewer.Insert($"[WebViewBlockly_PageFinished] alert is redirected for receiving generated Blockly code"$, HMITileUtils.EVENT_LEVEL_INFO)
 End Sub
 
 ' This receives JS alert() messages (via setOnAlert event handler) from the webview
@@ -296,32 +309,33 @@ Sub WebViewBlockly_Event(MethodName As String, Args() As Object)
 	If Args.Length > 0 Then
 		Dim joWebEvent As JavaObject = Args(0)
 		Dim msg As String = joWebEvent.RunMethod("getData", Null)
-		AppLog(msg)
 		TileEventViewer.Insert($"[WebViewBlockly_Event] msg=${msg}"$, HMITileUtils.EVENT_LEVEL_INFO)
-		Try
-			Dim parser As JSONParser
-			parser.Initialize(msg)
-			Dim jRoot As Map = parser.NextObject
-			Dim command As String = jRoot.Get("command")
-			If command == "start" Then TileEventViewer.Clear
-			TileEventViewer.Insert($"[WebViewBlockly_Event] command=${command}"$, HMITileUtils.EVENT_LEVEL_INFO)
-			AppLog($"[WebViewBlockly_Event] ${command}"$)
-			RunCommand(Commands.Find(command.Replace("_", " ")))
-		Catch
-			AppLog($"[WebViewBlockly_Event][E] ${LastException}"$)
-		End Try
+		' Check if JSON
+		If IsJson(msg) Then
+			Try
+				Dim parser As JSONParser
+				parser.Initialize(msg)
+				Dim jRoot As Map = parser.NextObject
+				Dim command As String = jRoot.Get("command")
+				If command == "start" Then TileEventViewer.Clear
+				TileEventViewer.Insert($"[WebViewBlockly_Event] command=${command}"$, HMITileUtils.EVENT_LEVEL_INFO)
+				RunCommand(Commands.Find(command.Replace("_", " ")))
+			Catch
+				TileEventViewer.Insert($"[WebViewBlockly_Event][E] ${LastException}"$, HMITileUtils.EVENT_LEVEL_ALARM)
+			End Try			
+		End If
 	End If
 End Sub
 
 Private Sub RunCommand(command As TCommand)
-	AppLog($"[RunCommand] ${command}"$)
-
 	' Check if there is a command
-	If command.IsInitialized Then
+	If command <> Null Then
+		TileEventViewer.Insert($"[RunCommand] name=${command.Name}, devid=${command.deviceid}"$, HMITileUtils.EVENT_LEVEL_INFO)
 
 		' Handle system commands first
 		If command.DeviceId == BLEConstants.DEV_SYSTEM Then
-			' BLE Connect - see also HandleBLEConnect
+			' Connect or disconnect by reading first byte of the command value byte array			
+			' BLE Connect (value = 1) - see also HandleBLEConnect
 			If command.Value(0) = BLEConstants.STATE_ON Then
 				If Not(IsConnected) Then
 					TileEventViewer.Insert($"[TileListCommands_ItemClick] Connecting... ${BLEConstants.BLE_DEVICE_NAME}"$, HMITileUtils.EVENT_LEVEL_INFO)
@@ -339,7 +353,7 @@ Private Sub RunCommand(command As TCommand)
 				End If
 			End If
 			
-			' BLE Disconnect - see also HandleBLEConnect
+			' BLE Disconnect (value = 0) - see also HandleBLEConnect
 			If command.Value(0) = BLEConstants.STATE_OFF Then
 				If IsConnected Then
 					TileEventViewer.Insert($"[TileListCommands_ItemClick] Disconnecting... ${BLEConstants.BLE_DEVICE_NAME}"$, HMITileUtils.EVENT_LEVEL_WARNING)
@@ -386,8 +400,45 @@ Private Sub RunCommand(command As TCommand)
 End Sub
 
 ' ------------------------------
-' Execute button - user triggers sending command to hardware
+' Execute button - user triggers to save/load workspace and sending command to hardware
 ' ------------------------------
+Private Sub ButtonRun_Click
+    Dim engine As JavaObject = GetEngine(WebViewBlockly)
+    ' Call the JS function to run all blocks
+    engine.RunMethod("executeScript", Array("runWorkspaceBlocks()"))
+End Sub
+
+Private Sub ButtonSave_Click
+	Dim engine As JavaObject = GetEngine(WebViewBlockly)
+	' Call JS function and get Base64 workspace
+	Dim base64 As String = engine.RunMethod("executeScript", Array("saveWorkspaceBase64()"))
+	If base64 <> Null And base64.Length > 0 Then
+		Try
+			Dim xml As String = DecodeBase64(base64)
+			File.WriteString(File.DirApp, WORKSPACE_DEFAULT_FILE, xml)
+			TileEventViewer.Insert($"[ButtonLoad] Workspace saved successfully"$, HMITileUtils.EVENT_LEVEL_INFO)
+		Catch
+			TileEventViewer.Insert($"[ButtonSave] Workspace not saved ${LastException}"$, HMITileUtils.EVENT_LEVEL_ALARM)
+		End Try
+	End If
+End Sub
+
+Private Sub ButtonLoad_Click
+	Dim engine As JavaObject = GetEngine(WebViewBlockly)
+	If File.Exists(File.DirApp, WORKSPACE_DEFAULT_FILE) Then
+		Try
+			Dim xml As String = File.ReadString(File.DirApp, WORKSPACE_DEFAULT_FILE)
+			If xml.Length > 0 Then
+				Dim base64 As String = EncodeBase64(xml)
+				engine.RunMethod("executeScript", Array($"loadWorkspaceBase64('${base64}')"$))
+				TileEventViewer.Insert($"[ButtonLoad] Workspace loaded successfully"$, HMITileUtils.EVENT_LEVEL_INFO)
+			End If
+		Catch
+			TileEventViewer.Insert($"[ButtonLoad] Workspace not loaded ${LastException}"$, HMITileUtils.EVENT_LEVEL_ALARM)
+		End Try
+	End If
+End Sub
+
 Private Sub ButtonTest_Click
 	' Create the webview engine object
 	Dim engine As JavaObject = GetEngine(WebViewBlockly)
@@ -401,15 +452,51 @@ End Sub
 ' ------------------------------
 ' Logging Helper
 ' ------------------------------
-Public Sub AppLog(sEntry As String)
-	Log(DateTime.Date(DateTime.Now) & " " & DateTime.Time(DateTime.Now) & ": " & sEntry)
-End Sub
+'Public Sub AppLog(msg As String)
+'	Log($"${DateTime.Date(DateTime.Now)} ${DateTime.Time(DateTime.Now)}: ${msg}"$)
+'End Sub
 
 ' ------------------------------
 ' Helper to access the WebEngine via JavaObject
 ' ------------------------------
-Sub GetEngine(wv As WebView) As JavaObject
+Public Sub GetEngine(wv As WebView) As JavaObject
 	Dim jo As JavaObject = wv
 	Return jo.RunMethod("getEngine", Null)
 End Sub
 #end region
+
+Public Sub IsJson(text As String) As Boolean
+	Dim result As Boolean
+	Try
+		Dim parser As JSONParser
+		parser.Initialize(text)
+		Dim jRoot As Map = parser.NextObject	'ignore
+		result = True
+	Catch
+		result = False
+	End Try
+	Return result
+End Sub
+
+' ------------------------------
+' Base64 encode/decode
+' ------------------------------
+
+' Encode a string to Base64
+Public Sub EncodeBase64(Data As String) As String
+	Dim jo As JavaObject
+	jo.InitializeStatic("java.util.Base64")
+	Dim encoder As JavaObject = jo.RunMethod("getEncoder", Null)
+	Dim bytes() As Byte = Data.GetBytes("UTF8")
+	Dim base64 As String = encoder.RunMethod("encodeToString", Array(bytes))
+	Return base64
+End Sub
+
+' Decode a Base64 string
+Public Sub DecodeBase64(Base64Text As String) As String
+	Dim jo As JavaObject
+	jo.InitializeStatic("java.util.Base64")
+	Dim decoder As JavaObject = jo.RunMethod("getDecoder", Null)
+	Dim bytes() As Byte = decoder.RunMethod("decode", Array(Base64Text))
+	Return BytesToString(bytes, 0, bytes.Length, "UTF8")
+End Sub

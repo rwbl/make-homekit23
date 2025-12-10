@@ -1,32 +1,71 @@
 /*
-	HomeKit32 App
+	Project:	HomeKit32
+	File:		blockly_app.js
+	Brief:		Button handler and communication with B4J using redirected alert function.
 */
 
+
+// ======================================================================
+// GLOBAL FUNCTIONS
+// ======================================================================
+// Notes
+// B4J executeScript() requires a synchronous return value (do not define as async)
+
+// ======================================================================
+// Run all blocks in the workspace
+// ======================================================================
+function runWorkspaceBlocks() {
+	runWorkspaceBlocksAsync();
+}
+
+async function runWorkspaceBlocksAsync() {
+    const topBlocks = window.workspace.getTopBlocks(true);
+    const queue = [];
+
+    // Convert top-level blocks to async functions
+    topBlocks.forEach(block => {
+        const gen = Blockly.JavaScript[block.type];
+        if (gen) queue.push(gen(block));
+    });
+
+    // Execute sequentially
+    await window.runBlockQueue(queue);
+}
+
+// ======================================================================
+// BASE64 SAVE/LOAD
+// ======================================================================
+
+// Save workspace: returns XML text encoded in Base64
+function saveWorkspaceBase64() {
+    const xml = Blockly.Xml.workspaceToDom(window.workspace);
+    const xmlText = Blockly.Xml.domToText(xml);
+	// Base64 encode
+    return btoa(xmlText); 
+}
+
+// Load workspace from Base64 string
+function loadWorkspaceBase64(base64Text) {
+    try {
+        const xmlText = atob(base64Text); // Base64 decode
+        const xml = Blockly.Xml.textToDom(xmlText);
+        window.workspace.clear();
+        Blockly.Xml.domToWorkspace(xml, window.workspace);
+        console.log("[loadWorkspaceBase64] Workspace loaded");
+    } catch (e) {
+        console.error("[loadWorkspaceBase64] Failed:", e);
+    }
+}
+
+// ======================================================================
+// BLOCKLY WORKSPACE
+// ======================================================================
 window.onload = function () {
 
     // Inject Blockly
     window.workspace = Blockly.inject('blocklyDiv', {
         toolbox: document.getElementById('toolbox')
     });
-
-	/*
-    // WebSocket for B4J
-    window.b4j_ws = new WebSocket("ws://127.0.0.1:18888/hk32");
-
-    b4j_ws.onopen  = () => console.log("WebSocket connected");
-    b4j_ws.onclose = () => console.log("WebSocket closed");
-    b4j_ws.onerror = e => console.log("WebSocket error", e);
-
-	async function sendCommandToB4JAsync(obj) {
-		window.b4j.JavaReceive(JSON.stringify(obj));
-	}
-
-    window.sendCodeToB4J = function(code) {
-		// alert(code);
-		// window.b4j_ws.send(JSON.stringify(obj));
-		window.b4j.JavaReceive(JSON.stringify(obj));
-    };
-	*/
 
 	// Run all blocks sequentially
 	window.runBlockQueue = async function(blocks) {
@@ -42,6 +81,10 @@ window.onload = function () {
 		alert(JSON.stringify(obj));
 	};
 
+	/*
+		OLD CODE using HTML buttons
+
+	// Button Run to execute the blocks on the workspace
 	document.getElementById('btnRun').onclick = async function() {
 		const topBlocks = workspace.getTopBlocks(true);
 		const queue = [];
@@ -56,16 +99,14 @@ window.onload = function () {
 		await runBlockQueue(queue);
 	};
 
-	// Save Workspace Button
+	// Button Save Workspace
     document.getElementById('btnSaveWorkspace').onclick = function() {
         const xml = Blockly.Xml.workspaceToDom(workspace);
         const xmlText = Blockly.Xml.domToText(xml);
         alert(xmlText);
-        // alert('[btnSaveWorkspace] xml=' + xmlText);
-        // Optionally, send xmlText to B4J to save to file
     };
 
-    // Load Workspace Button
+    // Button Load Workspace
     document.getElementById('btnLoadWorkspace').onclick = function() {
         const xmlText = prompt("Paste workspace XML here:");
         if (!xmlText) return;
@@ -78,5 +119,5 @@ window.onload = function () {
             console.error("[btnLoadWorkspace][E] Failed to load workspace XML:", e);
         }
     };
-
+	*/
 };

@@ -1,7 +1,9 @@
 /*
-	HomeKit32 Custom Blocks
+	Project:	HomeKit32
+	File:		blockly_custom_blocks.js
+	Brief:		Definition of custom blocks.
 */
- 
+
 Blockly.defineBlocksWithJsonArray([
 	{
 		"type": "connect",

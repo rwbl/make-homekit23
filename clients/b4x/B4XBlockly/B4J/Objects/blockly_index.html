@@ -1,21 +1,33 @@
 <!DOCTYPE html>
 <html>
+<!-- 
+	Project:	HomeKit32
+	File:		blockly_index.html.
+	Brief:		Blockly example for the HomeKit32 (HK32) project.
+	Date:		20251210
+	Author:		Robert W.B. Linn (c) 2025 MIT
+-->
 <head>
-<meta charset="utf-8">
-<title>Blockly Test</title>
+	<meta charset="utf-8">
+	<title>HomeKit32 Blockly Test</title>
 
-<script src="https://unpkg.com/blockly@8.0.0/blockly.min.js"></script>
+	<!-- Load blockly api from CDN -->
+	<script src="https://unpkg.com/blockly@8.0.0/blockly.min.js"></script>
 
-<style>
-  html, body { height: 100%; margin: 0; overflow: hidden; }
-  #blocklyDiv { height: 90%; width: 100%; }
-  #buttons { height: 10%; padding: 5px; }
-</style>
+	<style>
+	  html, body { height: 100%; margin: 0; overflow: hidden; }
+	  #blocklyDiv { height: 100%; width: 100%; }
+	  <! -- #buttons { height: 10%; padding: 5px; } -->
+	</style>
 </head>
 
 <body>
 
-<!-- Needed for Blockly -->
+<!-- 
+	Create the toolbox with all blocks.
+	Required for Blockly.
+	Categories are shown in order as defined on the left side in browser/webview.
+-->
 <xml id="toolbox" style="display:none">
 	<!-- HK32 custom blocks -->
 	<category name="HomeKit32" colour="120">
@@ -23,9 +35,9 @@
 		<block type="disconnect"></block>
 		<block type="yellow_led_on"></block>
 		<block type="yellow_led_off"></block>
-		<block type="yellow_led"></block>		<!-- indicator block -->
+		<block type="yellow_led"></block>		<!-- indicator block status LED -->
 		<block type="open_door"></block>
-		<block type="dht11_sensor"></block>		<!-- indicator block -->
+		<block type="dht11_sensor"></block>		<!-- indicator block DHT11 temp + hum -->
 		<block type="delay"></block>
     </category>
 	
@@ -68,7 +80,9 @@
 
 </xml>
 
-<!-- Add inside <body> -->
+<!-- 
+	New variable dialog instead HTML confirm dialogAdd inside <body> 
+-->
 <div id="variableDialog" style="
     display:none;
     position:absolute;
@@ -89,11 +103,14 @@
 
 <div id="blocklyDiv"></div>
 
+<!--
+HTML buttons replaced by B4X buttons.
 <div id="buttons">
   <button id="btnRun">Run</button>
   <button id="btnSaveWorkspace">Save Workspace</button>
   <button id="btnLoadWorkspace">Load Workspace</button>
 </div>
+  -->
 
 <!-- LOAD JS AFTER HTML, IMPORTANT! -->
 <script src="blockly_custom_blocks.js"></script>
