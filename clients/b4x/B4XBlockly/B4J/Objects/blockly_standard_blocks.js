@@ -4,6 +4,36 @@
  
 Blockly.defineBlocksWithJsonArray([
 	{
+	  "type": "comment_block",
+	  "message0": "Comment: %1",
+	  "args0": [
+		{
+		  "type": "field_input",
+		  "name": "COMMENT",
+		  "text": "Enter note"
+		}
+	  ],
+	  "colour": 160,
+	  "tooltip": "This block does nothing, only a comment",
+	  "helpUrl": ""
+	},
+	{
+    "type": "log_block",
+    "message0": "log %1",
+    "args0": [
+      {
+        "type": "input_value",
+        "name": "TEXT",
+        "check": "String"
+      }
+    ],
+    "previousStatement": null,
+    "nextStatement": null,
+    "colour": 160,
+    "tooltip": "Logs a message to console",
+    "helpUrl": ""
+	},
+	{
     "type": "start_block",
     "message0": "Start",
     "nextStatement": null,
@@ -19,6 +49,17 @@ Blockly.defineBlocksWithJsonArray([
     "tooltip": "Stops program execution",
     "helpUrl": ""
 	},
+
+	{
+    "type": "text_literal",
+    "message0": "\"%1\"",
+    "args0": [
+      { "type": "field_input", "name": "TEXT", "text": "" }
+    ],
+    "output": "String",
+    "colour": 160
+	},
+
 	// Repeat loop: has a value input TIMES (a number) and a statement input DO (stack of blocks)
 	{
 	"type": "repeat_loop",

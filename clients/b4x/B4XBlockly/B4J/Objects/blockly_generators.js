@@ -12,7 +12,10 @@
 // GENERATORS
 // ======================================================================
 
+// ======================================================================
 // --- Custom block generators ---
+// ======================================================================
+
 Blockly.JavaScript['connect'] = block => async () => {
     await sendCommandToB4JAsync({ command: "connect" });
 };
@@ -43,6 +46,52 @@ Blockly.JavaScript['delay'] = block => async () => {
     await new Promise(resolve => setTimeout(resolve, ms));
 };
 
+// ======================================================================
+// --- Standard block generators ---
+// ======================================================================
+
+Blockly.JavaScript['comment_block'] = function(block) {
+    const comment = block.getFieldValue('COMMENT');
+    return ''; // no code generated
+};
+
+/*
+Blockly.JavaScript['log_block'] = block => async () => {
+    const msg = Blockly.JavaScript.valueToCode(block, 'TEXT', Blockly.JavaScript.ORDER_ATOMIC) || '""';
+    await sendCommandToB4JAsync({ command: msg });
+    // return "console.log(${msg});\n";
+};
+*/
+
+/*
+	In B4J receiving like: 
+	13:20:56 - [WebViewBlockly_Event] msg={"command":"log","value":"Setting LED ON"}
+*/
+Blockly.JavaScript['log_block'] = block => async () => {
+    // Get the value of connected input block
+    const inputBlock = block.getInputTargetBlock('TEXT');
+    let msg = '';
+    if (inputBlock) {
+        const gen = Blockly.JavaScript[inputBlock.type];
+        if (gen) {
+            // Run the input block async function to get its result
+            const resultFn = gen(inputBlock);
+            if (typeof resultFn === "function") {
+                // Await the result if the block itself returns a value
+                msg = await resultFn();
+            }
+        }
+    }
+
+    // Fallback: use empty string if no input
+    msg = msg || '[log empty]';
+
+    // Output to console or send to B4J
+    await sendCommandToB4JAsync({ command: "log", value: msg });
+    // console.log(msg);
+};
+
+
 // Start block: returns async function that executes connected blocks
 Blockly.JavaScript['start_block'] = block => async () => {
     const nextBlock = block.getNextBlock();
@@ -60,6 +109,10 @@ Blockly.JavaScript['start_block'] = block => async () => {
 // Stop block: just a placeholder (could be used for logic in the future)
 Blockly.JavaScript['stop_block'] = block => async () => {
     await sendCommandToB4JAsync({ command: "stop" });
+};
+
+Blockly.JavaScript['text_literal'] = block => async () => {
+    return block.getFieldValue('TEXT');
 };
 
 // Repeat loop
