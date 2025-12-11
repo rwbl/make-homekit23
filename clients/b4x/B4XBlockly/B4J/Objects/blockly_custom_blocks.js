@@ -2,6 +2,8 @@
 	Project:	HomeKit32
 	File:		blockly_custom_blocks.js
 	Brief:		Definition of custom blocks.
+				JSON block definitions for HomeKit32 blocks.
+				Use Blockly.defineBlocksWithJsonArray to define the UI blocks.
 */
 
 Blockly.defineBlocksWithJsonArray([

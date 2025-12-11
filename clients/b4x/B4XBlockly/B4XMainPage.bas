@@ -7,7 +7,7 @@ Version=9.85
 #Region Class Header
 ' File:			HK32Blockly
 ' Brief:		Client controlling the HomeKit32 via BLE using Blockly.
-' Date:			2025-12-10
+' Date:			2025-12-11
 ' Author:		Robert W.B. Linn (c) 2025 MIT
 ' Description:	This B4J application (app) connects as a client with an ESP32 running as Bluetooth Low Energy (BLE) server.
 '				The BLE-Server advertises DHT22 sensor data temperature & humidity and listens to commands send from connected clients.
@@ -34,7 +34,7 @@ Version=9.85
 #End Region
 
 Private Sub Class_Globals
-	Private Const VERSION As String = "HK32Blockly v20251210"
+	Private Const VERSION As String = "HK32Blockly v20251211"
 	Private Const COPYRIGHT As String = "HomeKit32 Blockly Example by Robert W.B. Linn (c) 2025 MIT"
 		
 	Private Const WORKSPACE_DEFAULT_FILE As String = "workspace.xml"
@@ -317,8 +317,15 @@ Sub WebViewBlockly_Event(MethodName As String, Args() As Object)
 				parser.Initialize(msg)
 				Dim jRoot As Map = parser.NextObject
 				Dim command As String = jRoot.Get("command")
-				If command == "start" Then TileEventViewer.Clear
 				TileEventViewer.Insert($"[WebViewBlockly_Event] command=${command}"$, HMITileUtils.EVENT_LEVEL_INFO)
+			
+				If command == "start" Then TileEventViewer.Clear
+				If command = "getvariable" Then
+					Dim varName As String = jRoot.Get("variable")
+            		Dim value As Object = jRoot.Get("value")
+            		Log("Variable " & varName & " = " & value)
+				End If
+
 				RunCommand(Commands.Find(command.Replace("_", " ")))
 			Catch
 				TileEventViewer.Insert($"[WebViewBlockly_Event][E] ${LastException}"$, HMITileUtils.EVENT_LEVEL_ALARM)
@@ -442,10 +449,23 @@ End Sub
 Private Sub ButtonTest_Click
 	' Create the webview engine object
 	Dim engine As JavaObject = GetEngine(WebViewBlockly)
-	Dim obj As Object = engine.RunMethod("executeScript", Array("updateDeviceState('yellow_led', 'ON')"))
-	Dim tempValue As Float = 22.3
-	Dim humValue As Float = 54
-	obj = engine.RunMethod("executeScript", Array($"updateDeviceDHT11(${tempValue},${humValue})"$))
+
+	engine.RunMethod("executeScript", Array("getVariable('x')"))
+
+	Try
+		engine.RunMethod("executeScript", Array("setVariable('x', 1958)"))
+		engine.RunMethod("executeScript", Array("setVariable('abc', 123)"))
+	Catch
+		Log($"[ExecuteScript]]E]${LastException}"$)
+	End Try
+
+	Return
+
+	Dim obj As Object = engine.RunMethod("executeScript", Array("setDeviceState('yellow_led', 'ON')"))
+
+	Dim tempValue As Float	= 22.3
+	Dim humValue As Float	= 69
+	obj = engine.RunMethod("executeScript", Array($"setDeviceDHT11(${tempValue},${humValue})"$))
 	Log(obj)
 End Sub
 

@@ -15,14 +15,14 @@
 	List of devices
 	The device block type must match the defined blockType (see blockly_custom_blocks.js).
 */
-let DEV_YELLOW_LED = "yellow_led";
-let DEV_DHT11 = "dht11_sensor";
-let DEV_MOTION_SENSOR = "motion_sensor";
+let DEV_YELLOW_LED		= "yellow_led";
+let DEV_DHT11 			= "dht11_sensor";
+let DEV_MOTION_SENSOR	= "motion_sensor";
 
 /*
-	updateDeviceState
+	setDeviceState
 	Loop over all blocks to get the device as defined in the constants.
-	Update the device property STATE (see example field name).
+	Set the device property STATE (see example field name).
 	Parameters:
 		devblocktype - Block type as defined in the constants and in blockly_custom_blocks.js
 		state - Block property state value for field "STATE"
@@ -36,7 +36,7 @@ let DEV_MOTION_SENSOR = "motion_sensor";
 			"previousStatement": null,"nextStatement": null,"colour": 60
 		},
 */
-function updateDeviceState(devblocktype, state) {
+function setDeviceState(devblocktype, state) {
     const allBlocks = workspace.getAllBlocks();
     allBlocks.forEach(block => {
         if (block.type === devblocktype) {
@@ -47,7 +47,7 @@ function updateDeviceState(devblocktype, state) {
 }
 
 /*
-	updateDeviceSensor
+	setDeviceSensor
 	Loop over all blocks to get the device as defined in the constants.
 	Update the device field with new value.
 	Parameters:
@@ -55,7 +55,7 @@ function updateDeviceState(devblocktype, state) {
 		field - Block property field to update
 		value - Block property field value
 */
-function updateDeviceSensor(devblocktype, field, value) {
+function setDeviceSensor(devblocktype, field, value) {
     const allBlocks = workspace.getAllBlocks();
     allBlocks.forEach(block => {
         if (block.type === devblocktype) {
@@ -69,11 +69,11 @@ function updateDeviceSensor(devblocktype, field, value) {
 //=======================================================================
 
 /*
-	updateDeviceYellowLED
+	setDeviceYellowLED
 	Loop over all blocks to get the device as defined in the constants.
-	Update the device property.
+	Set the device property.
 */
-function updateDeviceYellowLED(state) {
+function setDeviceYellowLED(state) {
     const allBlocks = workspace.getAllBlocks();
     allBlocks.forEach(block => {
         if (block.type === DEV_YELLOW_LED) {
@@ -84,11 +84,11 @@ function updateDeviceYellowLED(state) {
 }
 
 /*
-	updateDeviceDHT11
+	setDeviceDHT11
 	Loop over all blocks to get the device as defined in the constants.
-	Update the device properties.
+	Set the device properties.
 */
-function updateDeviceDHT11(temp, hum) {
+function setDeviceDHT11(temp, hum) {
     const allBlocks = workspace.getAllBlocks();
     allBlocks.forEach(block => {
 		if (block.type === DEV_DHT11) {
@@ -103,11 +103,11 @@ function updateDeviceDHT11(temp, hum) {
 }
 
 /*
-	updateDeviceMotion
+	setDeviceMotion
 	Loop over all blocks to get the device as defined in the constants.
-	Update the device properties.
+	Set the device properties.
 */
-function updateDeviceMotion(isDetected) {
+function setDeviceMotion(isDetected) {
     const allBlocks = workspace.getAllBlocks();
     allBlocks.forEach(block => {
         if (block.type === DEV_MOTION_SENSOR) {

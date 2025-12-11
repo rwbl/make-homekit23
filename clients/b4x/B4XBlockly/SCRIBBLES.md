@@ -1,5 +1,71 @@
 
+## Overview
+HomeKit32 Blockly Integration in B4J
 
+Project Overview:
+This B4J project integrates Google Blockly as a visual programming interface to control HomeKit32 devices. It allows users to drag-and-drop blocks representing devices (LEDs, sensors, DHT11, etc.), control device states, and send commands to a B4J backend.
+
+Key Features:
+
+Custom Blockly Blocks:
+
+Device blocks (e.g., yellow_led_on/off, DHT11_sensor) with real-time state indicators.
+
+Standard blocks like delay, connect, log.
+
+Start and stop blocks to define the execution flow.
+
+Asynchronous Command Execution:
+
+Blocks generate async JavaScript functions.
+
+Commands are sent to B4J via a centralized sendCommandToB4JAsync function, using redirected alert() messages in the WebView.
+
+B4J parses commands in WebViewBlockly_Event, allowing logging, LED control, and sensor updates.
+
+Real-time Device State Feedback:
+
+Device state updates propagate from B4J to the Blockly workspace using custom JS functions like updateDeviceState('yellow_led', 'ON').
+
+Sensor blocks (e.g., DHT11) update dynamically, including color changes based on thresholds.
+
+Workspace Persistence:
+
+Users can save and load Blockly workspace layouts via the system clipboard.
+
+B4J buttons replace HTML buttons, calling JS functions (saveWorkspace, loadWorkspace) using WebView.executeScript.
+
+Base64 encoding ensures safe transfer of XML workspace data between B4J and Blockly.
+
+Technical Highlights:
+
+Uses JavaObject in B4J to access the WebView engine and execute JS scripts.
+
+Async block execution ensures sequential processing without freezing the GUI.
+
+Fully modular JS architecture:
+
+blockly_custom_blocks.js – custom device blocks
+
+blockly_standard_blocks.js – standard blocks like delay and log
+
+blockly_generators.js – block-to-code generation
+
+blockly_device_states.js – dynamic state updates
+
+Challenges and Solutions:
+
+JS Alert Redirection: Since JavaFX WebView has limited JS dialog support, a custom sendCommandToB4JAsync function handles communication.
+
+Async Execution & B4J: Async JavaScript functions execute blocks sequentially while ensuring B4J receives messages correctly.
+
+Clipboard-based Workspace Management: Avoids browser security issues with direct file access, enabling reliable save/load operations.
+
+Conclusion:
+This solution enables a fully interactive visual programming environment for HomeKit32 devices directly within B4J. It bridges Blockly’s powerful visual interface with real-time device control, providing a robust framework for home automation experiments, learning, and prototyping.
+
+
+## Blocks
 Now that the variable dialog is working, the next big steps could be:
 
 Add more HomeKit32-specific blocks (e.g., lights, shades, sensors).
@@ -30,4 +96,105 @@ If you want, we can start building the next standard HomeKit32 block, like “tu
 | **Temperature normal**        | 120           | Green           | Safe operating temp   |
 | **Sensor inactive / off**     | 30–60         | Orange-Yellow   | Visual inactive       |
 | **Sensor active / triggered** | 0             | Red             | Visual alert          |
+
+## HTML Button Actions
+
+
+Private Sub ButtonSave_Click
+	AppLog($"[Button_Save] Start"$)
+
+	Dim engine As JavaObject = GetEngine(WebViewBlockly)
+
+	' Execute JS to get workspace XML
+	Dim workspace As String = engine.RunMethod("executeScript", Array("saveWorkspace()"))
+	AppLog($"[Button_Save] workspace=${workspace}"$)
+
+	If workspace <> Null And workspace.Length > 0 Then
+        
+		' Save to file
+		Try
+			File.WriteString(File.DirApp, WORKSPACE_DEFAULT_FILE , workspace)
+			AppLog($"[Button_Save] Workspace saved to ${WORKSPACE_DEFAULT_FILE }"$)
+		Catch
+			AppLog($"[Button_Save] Cannot save workspace: ${LastException}"$)
+		End Try
+	End If
+End Sub
+
+Sub ButtonLoad_Click
+	If Not(File.Exists(File.DirApp, WORKSPACE_DEFAULT_FILE )) Then
+		AppLog($"[Button_Load] Workspace file ${WORKSPACE_DEFAULT_FILE} not found."$)
+		Return
+	End If
+
+	Dim workspace As String = File.ReadString(File.DirApp, "workspace.xml")
+	fx.Clipboard.SetString(workspace)
+	AppLog($"[Button_Load] Workspace copied to the clipboard ${workspace}"$)
+
+	Dim engine As JavaObject = GetEngine(WebViewBlockly)
+	engine.RunMethod("executeScript", Array("loadWorkspace()"))
+	
+	AppLog($"[Button_Load] Workspace loaded from ${WORKSPACE_DEFAULT_FILE}"$)
+End Sub
+
+'
+'Private Sub ButtonLoad_Click
+'	If File.Exists(File.DirApp, WORKSPACE_DEFAULT_FILE ) = False Then
+'		AppLog($"[Button_Load] Workspace file ${WORKSPACE_DEFAULT_FILE} not found."$)
+'		Return
+'	End If
+'
+'	Dim xml As String
+'	Try
+'		xml = File.ReadString(File.DirApp, WORKSPACE_DEFAULT_FILE )
+'		' Replace optional but safe
+'		xml = xml.Replace(Chr(13), "").Replace(Chr(10), "\n") 
+'
+'		Dim engine As JavaObject = GetEngine(WebViewBlockly)
+'
+'		' Assign XML as template-literal
+'		Dim jsSet As String = $"window.__HK32_XML_TO_LOAD = `${xml}`;"$
+'		engine.RunMethod("executeScript", Array(jsSet))
+'
+'		' Load from JS
+'		engine.RunMethod("executeScript", Array("loadWorkspaceFromVar();"))
+'
+'		AppLog($"[Button_Load] Workspace loaded from ${WORKSPACE_DEFAULT_FILE}"$)
+'
+'	Catch
+'		AppLog($"[Button_Load] Cannot load workspace: ${LastException}"$)
+'	End Try
+'End Sub
+'
+
+## workspace	// Save workspace: returns XML text
+	window.saveWorkspace = async function() {
+		const xml = Blockly.Xml.workspaceToDom(window.workspace);
+		const xmlText = Blockly.Xml.domToText(xml);
+		return xmlText;
+	}
+
+	// Load workspace: B4J provides XML text via argument
+	window.loadWorkspace = async function(xmlText) {
+		try {
+			const xml = Blockly.Xml.textToDom(xmlText);
+			window.workspace.clear();
+			Blockly.Xml.domToWorkspace(xml, window.workspace);
+		} catch (e) {
+			console.error("[loadWorkspace] XML error:", e);
+		}
+	}
+
+## Vars
+	// Do not use Blockly’s built-in variable system (because it breaks async).
+	// Use a clean JS object called workspaceVars that acts like RAM:
+	// The variable blocks simply read/write this object.
+	window.workspaceVars = {};   // { varName: value }
+
+	// -----------------------------------------------------
+    // Create predefined variables (appear in Variables menu)
+    // -----------------------------------------------------
+    workspace.createVariable('x');
+    workspace.createVariable('y');
+    workspace.createVariable('z');
 

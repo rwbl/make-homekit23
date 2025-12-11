@@ -4,84 +4,104 @@
 	Project:	HomeKit32
 	File:		blockly_index.html.
 	Brief:		Blockly example for the HomeKit32 (HK32) project.
-	Date:		20251210
+	Date:		20251211
 	Author:		Robert W.B. Linn (c) 2025 MIT
 -->
+
 <head>
-	<meta charset="utf-8">
-	<title>HomeKit32 Blockly Test</title>
+<meta charset="utf-8">
+<title>Blockly HomeKit32</title>
 
-	<!-- Load blockly api from CDN -->
-	<script src="https://unpkg.com/blockly@8.0.0/blockly.min.js"></script>
+<!-- Core Blockly (use the version you prefer) -->
+<script src="https://unpkg.com/blockly@8.0.0/blockly.min.js"></script>
 
-	<style>
-	  html, body { height: 100%; margin: 0; overflow: hidden; }
-	  #blocklyDiv { height: 100%; width: 100%; }
-	  <! -- #buttons { height: 10%; padding: 5px; } -->
-	</style>
+<style>
+  html, body { height: 100%; margin: 0; }
+  #blocklyDiv { height: calc(100% - 40px); width: 100%; }
+  #buttons { height: 40px; padding: 6px; background: #f4f4f4; box-sizing: border-box; }
+  button { margin-right: 6px; }
+</style>
 </head>
-
 <body>
 
 <!-- 
-	Create the toolbox with all blocks.
-	Required for Blockly.
-	Categories are shown in order as defined on the left side in browser/webview.
+	Toolbox: categories / blocks shown in the sidebar 
 -->
 <xml id="toolbox" style="display:none">
-	<!-- HK32 custom blocks -->
+
+	<!--
+		Custom
+	-->
 	<category name="HomeKit32" colour="120">
 		<block type="connect"></block>
 		<block type="disconnect"></block>
 		<block type="yellow_led_on"></block>
 		<block type="yellow_led_off"></block>
-		<block type="yellow_led"></block>		<!-- indicator block status LED -->
-		<block type="open_door"></block>
-		<block type="dht11_sensor"></block>		<!-- indicator block DHT11 temp + hum -->
+		<block type="yellow_led"></block>
 		<block type="delay"></block>
-    </category>
-	
-	<!-- Standard Blockly blocks -->
+		<block type="dht11_sensor"></block>
+		<block type="open_door"></block>
+	</category>
+
+	<!--
+		Standard
+	-->
+
 	<category name="Program Flow" colour="0">
+		<block type="start_block"></block>
+		<block type="stop_block"></block>
 		<block type="comment_block"></block>
 		<block type="log_block"></block>
 		<block type="text_literal"></block>
-		<block type="start_block"></block>
-		<block type="stop_block"></block>
 	</category>
 
-	<category name="Variables" custom="VARIABLE">
-	</category>
-
-	<!-- Loops -->
 	<category name="Loops" colour="120">
-		<!-- Repeat Loop -->
 		<block type="repeat_loop">
 			<value name="TIMES">
-				<block type="math_number">
-					<field name="NUM">5</field>
-				</block>
+				<block type="math_number"><field name="NUM">5</field></block>
 			</value>
+			<statement name="DO"></statement>
 		</block>
-
-		<!-- While Loop -->
 		<block type="while_loop"></block>
 	</category>
 
-	<!-- Logic -->
 	<category name="Logic" colour="210">
-		<block type="logic_boolean_custom"></block>
-		<block type="logic_compare_custom"></block>
+		<block type="logic_boolean"></block>
+		<block type="logic_compare"></block>
+		<block type="logic_operation"></block>
+		<block type="logic_negate"></block>
+		<block type="logic_if"></block>
+		<block type="logic_if_else"></block>
+		<block type="logic_else_if"></block>
+	</category>
+	
+	<category name="Math" colour="230">
+		<block type="math_number"><field name="NUM">0</field></block>
 	</category>
 
-	<!-- Math numbers -->
-	<category name="Math" colour="230">
-		<block type="math_number">
-			<field name="NUM">0</field>
-		</block>
-	</category>
+	<!--
+		custom="VARIABLE" tells Blockly to automatically include:
+			A “Create Variable” button.
+			All variables_set and variables_get blocks for all variables in the workspace.
+			No need a separate “Variables Custom” category with explicit variables_set/variables_get blocks, unless you want two separate categories for cosmetic reasons.
+	-->
+	<category name="Variables" custom="VARIABLE"></category>
 
 </xml>
+
+<!-- Blockly will be injected here -->
+<div id="blocklyDiv"></div>
+
+<!--
+	HTML buttons replaced by B4X buttons.
+  -->
+<div id="buttons">
+  <button id="btnRun">Run</button>
+<!--
+  <button id="btnSaveWorkspace">Save Workspace</button>
+  <button id="btnLoadWorkspace">Load Workspace</button>
+  -->
+</div>
 
 <!-- 
 	New variable dialog instead HTML confirm dialogAdd inside <body> 
@@ -106,20 +126,19 @@
 
 <div id="blocklyDiv"></div>
 
-<!--
-HTML buttons replaced by B4X buttons.
-<div id="buttons">
-  <button id="btnRun">Run</button>
-  <button id="btnSaveWorkspace">Save Workspace</button>
-  <button id="btnLoadWorkspace">Load Workspace</button>
-</div>
-  -->
+<!-- 
+	LOAD JS AFTER HTML, IMPORTANT! 
+-->
 
-<!-- LOAD JS AFTER HTML, IMPORTANT! -->
+<!-- Your block definitions -->
 <script src="blockly_custom_blocks.js"></script>
 <script src="blockly_standard_blocks.js"></script>
+<!-- Generators & runtime helpers -->
 <script src="blockly_generators.js"></script>
 <script src="blockly_device_states.js"></script>
+
+<!-- Your app script (must handle run button etc.) -->
+<!-- blockly_app.js should implement run button that calls runWorkspaceBlocks() -->
 <script src="blockly_app.js"></script>
 
 </body>
