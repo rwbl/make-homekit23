@@ -40,11 +40,13 @@ Private Sub Class_Globals
 	Private Const VERSION As String = "HK32Blockly v20251212"
 	Private Const COPYRIGHT As String = "HomeKit32 Blockly Example by Robert W.B. Linn (c) 2025 MIT"
 		
-	Private Const WORKSPACE_DEFAULT_FILE As String = "workspace.xml"
+	Private Const WORKSPACE_DEFAULT_FILE As String = "new.ws"
 	Private Const WORKSPACE_DEFAULT_VAR As String = "x"
 	
 	' Core
-	Private fx As JFX
+	#if B4J
+	Private fx As JFX	
+	#End If
 		
 	' UI
 	Private xui As XUI
@@ -75,6 +77,9 @@ Private Sub Class_Globals
 	' BLE Commands
 	Private Commands As BLECommands
 	Private ButtonCreateVar As B4XView
+	
+	' File
+	Private WorkspaceFile As String = WORKSPACE_DEFAULT_FILE
 End Sub
 
 #Region B4XPages
@@ -105,9 +110,17 @@ Private Sub B4XPage_Created (Root1 As B4XView)
 	
 	' WebViewBlockly Initialize
 	' Load Blockly HTML. JS will be injected in PageFinished (after load).
-	Dim htmlUri As String = File.GetUri(File.DirApp, "blockly_index.html") ' adjust if needed
+	Dim htmlUri As String
+	Dim folder As String
+	#if B4A
+	folder = File.DirDefaultExternal
+	#End If
+	#if B4J
+	folder = File.DirApp
+	htmlUri = File.GetUri(folder, "blockly_index.html") ' adjust if needed
 	TileEventViewer.Insert($"[B4XPage_Created] Loading Blockly HTML from: ${htmlUri}"$, HMITileUtils.EVENT_LEVEL_INFO)
 	WebViewBlockly.LoadUrl(htmlUri)
+	#end if
 
 	' BLE Manager Initialize	
 	#if B4A
@@ -279,7 +292,7 @@ Public Sub HandleBLEConnect(state As Boolean)
 		TileEventViewer.Insert($"[HandleBLEConnect] ${"Disconnected"} from ${BLEConstants.BLE_DEVICE_NAME}"$, HMITileUtils.EVENT_LEVEL_ALARM)
 	End If
 	IsConnected = state
-	BlocklySetVariable("connected", Convert.BoolToByte(IsConnected))
+	BlocklySetVariable("BLE_CONNECTED", IsConnected)
 End Sub
 
 ' HandleBLENotification
@@ -335,9 +348,9 @@ Sub WebViewBlockly_Event(MethodName As String, Args() As Object)
 				Select command
 					Case "start"
 						TileEventViewer.Clear
-						BlocklySetVariable("connected", 0)
+						BlocklySetVariable("BLE_CONNECTED", False)
 					Case "stop"
-						BlocklySetVariable("connected", 0)
+						BlocklySetVariable("BLE_CONNECTED", False)
 					Case "getvariable"
 						Dim varName As String = jRoot.Get("variable")
 						Dim value As Object = jRoot.Get("value")
@@ -444,9 +457,16 @@ End Sub
 
 Private Sub ButtonSave_Click
 	Dim input As B4XInputTemplate
+	Dim folder As String
+	#if B4A
+	folder = File.DirDefaultExternal
+	#End If
+	#if B4J
+	folder = File.DirApp	
+	#End If
 	input.Initialize
 	input.lblTitle.Text = "Save Workspace"
-	input.Text = WORKSPACE_DEFAULT_FILE
+	input.Text = WorkspaceFile	' WORKSPACE_DEFAULT_FILE
 	Wait For (Dialog.ShowTemplate(input, "OK", "", "CANCEL")) Complete (Result As Int)
 	If Result = xui.DialogResponse_Positive Then
 		Dim engine As JavaObject = GetEngine(WebViewBlockly)
@@ -455,7 +475,7 @@ Private Sub ButtonSave_Click
 		If base64 <> Null And base64.Length > 0 Then
 			Try
 				Dim xml As String = base64	'DecodeBase64(base64)
-				File.WriteString(File.DirApp, input.Text, xml)
+				File.WriteString(folder, input.Text, xml)
 				TileEventViewer.Insert($"[ButtonLoad] Workspace saved successfully to ${input.Text}"$, HMITileUtils.EVENT_LEVEL_INFO)
 			Catch
 				TileEventViewer.Insert($"[ButtonSave] Workspace not saved ${LastException}"$, HMITileUtils.EVENT_LEVEL_ALARM)
@@ -466,15 +486,22 @@ End Sub
 
 Private Sub ButtonLoad_Click
 	Dim input As B4XInputTemplate
+	Dim folder As String
+	#if B4A
+	folder = File.DirDefaultExternal	
+	#End If
+	#if B4J
+	folder = File.DirApp	
+	#End If
 	input.Initialize
 	input.lblTitle.Text = "Load Workspace"
-	input.Text = WORKSPACE_DEFAULT_FILE
+	input.Text = WorkspaceFile	'WORKSPACE_DEFAULT_FILE
 	Wait For (Dialog.ShowTemplate(input, "OK", "", "CANCEL")) Complete (Result As Int)
 	If Result = xui.DialogResponse_Positive Then
 		Dim engine As JavaObject = GetEngine(WebViewBlockly)
-		If File.Exists(File.DirApp, input.Text) Then
+		If File.Exists(folder, input.Text) Then
 			Try
-				Dim xml As String = File.ReadString(File.DirApp, input.Text)
+				Dim xml As String = File.ReadString(folder, input.Text)
 				If xml.Length > 0 Then
 					Dim base64 As String = xml	' EncodeBase64(xml)
 					engine.RunMethod("executeScript", Array($"loadWorkspace("${base64}")"$))
@@ -504,12 +531,20 @@ End Sub
 
 
 Private Sub ButtonTest_Click
-	BlocklySetVariable("connected", 1)
-	
-	Return
-
 	' Create the webview engine object
 	Dim engine As JavaObject = GetEngine(WebViewBlockly)
+
+	BlocklySetVariable("BLE_CONNECTED", False)
+	
+	Dim tempValue As Float	= 22.3
+	Dim humValue As Float	= 69
+	engine.RunMethod("executeScript", Array($"setDeviceDHT11(${tempValue},${humValue})"$))
+
+	Return
+
+	BlocklySetVariable("connected", 1)
+	
+
 
 	engine.RunMethod("executeScript", Array("getVariable('x')"))
 
@@ -522,12 +557,11 @@ Private Sub ButtonTest_Click
 		Log($"[ExecuteScript]]E]${LastException}"$)
 	End Try
 
-	Dim obj As Object = engine.RunMethod("executeScript", Array("setDeviceState('yellow_led', 'ON')"))
+	engine.RunMethod("executeScript", Array("setDeviceState('yellow_led', 'ON')"))
 
 	Dim tempValue As Float	= 22.3
 	Dim humValue As Float	= 69
-	obj = engine.RunMethod("executeScript", Array($"setDeviceDHT11(${tempValue},${humValue})"$))
-	Log(obj)
+	engine.RunMethod("executeScript", Array($"setDeviceDHT11(${tempValue},${humValue})"$))
 End Sub
 
 ' ------------------------------
