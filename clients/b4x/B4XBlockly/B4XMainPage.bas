@@ -7,7 +7,7 @@ Version=9.85
 #Region Class Header
 ' File:			HK32Blockly
 ' Brief:		Client controlling the HomeKit32 via BLE using Google Blockly.
-' Date:			2025-12-11
+' Date:			2025-12-12
 ' Author:		Robert W.B. Linn (c) 2025 MIT
 ' Description:	This B4J application (app) is developed to explore how to create & interact with Blockly.
 '				This application connects as a client with an ESP32 running as BLE Peripheral + GATT Server using UART services.
@@ -37,7 +37,7 @@ Version=9.85
 #End Region
 
 Private Sub Class_Globals
-	Private Const VERSION As String = "HK32Blockly v20251211"
+	Private Const VERSION As String = "HK32Blockly v20251212"
 	Private Const COPYRIGHT As String = "HomeKit32 Blockly Example by Robert W.B. Linn (c) 2025 MIT"
 		
 	Private Const WORKSPACE_DEFAULT_FILE As String = "workspace.xml"
@@ -343,7 +343,13 @@ Sub WebViewBlockly_Event(MethodName As String, Args() As Object)
 						Dim value As Object = jRoot.Get("value")
 						Log("Variable " & varName & " = " & value)
 					Case Else
-						RunCommand(Commands.Find(command.Replace("_", " ")))
+						Dim cmd As TCommand = Commands.Find(command.Replace("_", " "))
+						' Check if there is a command
+						If cmd == Null Then
+							TileEventViewer.Insert($"[RunCommand] Command ${command} not found"$, HMITileUtils.EVENT_LEVEL_ALARM)
+							Return
+						End If
+						RunCommand(cmd)
 				End Select
 			Catch
 				TileEventViewer.Insert($"[WebViewBlockly_Event][E] ${LastException}"$, HMITileUtils.EVENT_LEVEL_ALARM)
@@ -354,74 +360,77 @@ End Sub
 
 Private Sub RunCommand(command As TCommand)
 	' Check if there is a command
-	If command <> Null Then
-		TileEventViewer.Insert($"[RunCommand] name=${command.Name}, devid=${command.deviceid}"$, HMITileUtils.EVENT_LEVEL_INFO)
+	If command == Null Then
+		TileEventViewer.Insert($"[RunCommand] Command not found"$, HMITileUtils.EVENT_LEVEL_ALARM)
+		Return
+	End If
 
-		' Handle system commands first
-		If command.DeviceId == BLEConstants.DEV_SYSTEM Then
-			' Connect or disconnect by reading first byte of the command value byte array			
-			' BLE Connect (value = 1) - see also HandleBLEConnect
-			If command.Value(0) = BLEConstants.STATE_ON Then
-				If Not(IsConnected) Then
-					TileEventViewer.Insert($"[RunCommand] Connecting... ${BLEConstants.BLE_DEVICE_NAME}"$, HMITileUtils.EVENT_LEVEL_INFO)
-					#if B4A
-					Connect
-					#End If
-					
-					#if B4J
-					' Scan and connect > see event handlebleconnect
-					Wait For (BLEMgr.Scan) Complete (Success As Boolean)
-					If Not(Success) Then
-						TileEventViewer.Insert(BLEMgr.LastMsg, HMITileUtils.EVENT_LEVEL_ALARM)
-					End If
-					#End If
+	TileEventViewer.Insert($"[RunCommand] name=${command.Name}, devid=${command.deviceid}"$, HMITileUtils.EVENT_LEVEL_INFO)
+	' Handle system commands first
+	If command.DeviceId == BLEConstants.DEV_SYSTEM Then
+		' Connect or disconnect by reading first byte of the command value byte array			
+		' BLE Connect (value = 1) - see also HandleBLEConnect
+		If command.Value(0) = BLEConstants.STATE_ON Then
+			If Not(IsConnected) Then
+				TileEventViewer.Insert($"[RunCommand] Connecting... ${BLEConstants.BLE_DEVICE_NAME}"$, HMITileUtils.EVENT_LEVEL_INFO)
+				#if B4A
+				Connect
+				#End If
+				
+				#if B4J
+				' Scan and connect > see event handlebleconnect
+				Wait For (BLEMgr.Scan) Complete (Success As Boolean)
+				If Not(Success) Then
+					TileEventViewer.Insert(BLEMgr.LastMsg, HMITileUtils.EVENT_LEVEL_ALARM)
 				End If
+				#End If
 			End If
-			
-			' BLE Disconnect (value = 0) - see also HandleBLEConnect
-			If command.Value(0) = BLEConstants.STATE_OFF Then
-				If IsConnected Then
-					TileEventViewer.Insert($"[RunCommand] Disconnecting... ${BLEConstants.BLE_DEVICE_NAME}"$, HMITileUtils.EVENT_LEVEL_WARNING)
-					#if B4A
-					Disconnect
-					#End If
-					
-					#if B4J
-					' Disconnect > see event PyBridgeDisconnected
-					Wait For(BLEMgr.Disconnect) Complete (Success As Boolean)
-					If Not(Success) Then
-						TileEventViewer.Insert(BLEMgr.LastMsg, HMITileUtils.EVENT_LEVEL_ALARM)
-					End If
-					#End If
-				End If
-			End If
-			Return
 		End If
 		
-		' Handle device commands
-		#if B4A
-		If IsConnected Then
-			BLEMgr.WriteData(BLEConstants.SERVICE_UUID.ToLowerCase, _
-							 BLEConstants.CHAR_UUID_TX.ToLowerCase, _
-							 Commands.BuildPayload(command))
-			TileEventViewer.Insert($"[RunCommand] Command succesful ${command.Name}"$, HMITileUtils.EVENT_LEVEL_INFO)
-		Else
-			TileEventViewer.Insert($"[RunCommand] Command failed, BLE not connected."$, HMITileUtils.EVENT_LEVEL_ALARM)
-			Return
+		' BLE Disconnect (value = 0) - see also HandleBLEConnect
+		If command.Value(0) = BLEConstants.STATE_OFF Then
+			If IsConnected Then
+				TileEventViewer.Insert($"[RunCommand] Disconnecting... ${BLEConstants.BLE_DEVICE_NAME}"$, HMITileUtils.EVENT_LEVEL_WARNING)
+				#if B4A
+				Disconnect
+				#End If
+				
+				#if B4J
+				' Disconnect > see event PyBridgeDisconnected
+				Wait For(BLEMgr.Disconnect) Complete (Success As Boolean)
+				If Not(Success) Then
+					TileEventViewer.Insert(BLEMgr.LastMsg, HMITileUtils.EVENT_LEVEL_ALARM)
+				End If
+				#End If
+				IsConnected = False
+			End If
 		End If
-		#End If
-
-		#if B4J
-		' Handle device commands
-		If BLEMgr.IsConnected Then
-			BLEMgr.Write(Commands.BuildPayload(command))
-			TileEventViewer.Insert($"[RunCommand] Command succesful ${command.Name}"$, HMITileUtils.EVENT_LEVEL_INFO)
-		Else
-			TileEventViewer.Insert($"[RunCommand] Command failed, BLE not connected."$, HMITileUtils.EVENT_LEVEL_ALARM)
-			Return
-		End If
-		#End If
+		Return
 	End If
+	
+	' Handle device commands
+	#if B4A
+	If IsConnected Then
+		BLEMgr.WriteData(BLEConstants.SERVICE_UUID.ToLowerCase, _
+						 BLEConstants.CHAR_UUID_TX.ToLowerCase, _
+						 Commands.BuildPayload(command))
+		TileEventViewer.Insert($"[RunCommand] Command succesful ${command.Name}"$, HMITileUtils.EVENT_LEVEL_INFO)
+	Else
+		TileEventViewer.Insert($"[RunCommand] Command failed, BLE not connected."$, HMITileUtils.EVENT_LEVEL_ALARM)
+		Return
+	End If
+	#End If
+
+	#if B4J
+	' Handle device commands
+	If BLEMgr.IsConnected Then
+		BLEMgr.Write(Commands.BuildPayload(command))
+		TileEventViewer.Insert($"[RunCommand] Command succesful ${command.Name}"$, HMITileUtils.EVENT_LEVEL_INFO)
+	Else
+		TileEventViewer.Insert($"[RunCommand] Command failed, BLE not connected."$, HMITileUtils.EVENT_LEVEL_ALARM)
+		Return
+	End If
+	#End If
 End Sub
 
 ' ------------------------------
