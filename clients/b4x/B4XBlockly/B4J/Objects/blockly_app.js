@@ -191,6 +191,11 @@ window.onload = function () {
     // Initialize JS generator
     Blockly.JavaScript.init(window.workspace);
 
+	// NOW register your generators (workspace exists!)	
+    // setupRuntimeGenerators();
+
+    console.log("Blockly injected and generators registered.");
+
 	// ============================================================================
 	// RUNTIME DELEGATOR — forces use of new v12 async generators if available
 	// ============================================================================

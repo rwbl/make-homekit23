@@ -234,24 +234,42 @@ registerRuntimeGenerator('log_block', block => async () => {
     // Send to B4J — convert to string only here
     await sendCommandToB4JAsync({ command: 'log', value: (value === undefined || value === null) ? '[log empty]' : String(value) });
 });
+// Make sure you have the JavaScript generator loaded
+javascriptGenerator.forBlock['log_block'] = function(block, generator) {
+  // Use 'VALUE' or 'TEXT' (whichever name you gave the input in the definition)
+  const value = generator.valueToCode(block, 'TEXT', Order.ATOMIC) || "''";
+  return `console.log(${value});\n`;
+};
 */
+
 registerRuntimeGenerator('log_block', block => async () => {
+    // 1. Get the connected block
     const inputBlock = block.getInputTargetBlock('TEXT');
     let msg = '';
+
     if (inputBlock) {
+        // 2. Check your custom runtime map
         if (runtimeGenerators[inputBlock.type]) {
             const valFn = runtimeGenerators[inputBlock.type](inputBlock);
-            if (typeof valFn === 'function') msg = await valFn();
-            else msg = valFn;
+            msg = (typeof valFn === 'function') ? await valFn() : valFn;
         } else {
-            const codeValue = Blockly.JavaScript.valueToCode(inputBlock, '', Blockly.JavaScript.ORDER_ATOMIC);
-            msg = tryEvalValueCode(codeValue) || '';
+            // 3. FALLBACK: Use the official generator if available
+            // Use 'javascriptGenerator' in v12 (ensure the script is included)
+            const generator = Blockly.JavaScript || javascriptGenerator; 
+            if (generator) {
+                // Get the code for the attached block
+                const codeValue = generator.valueToCode(block, 'TEXT', generator.ORDER_ATOMIC);
+                // tryEvalValueCode is your custom helper to turn strings like "'Hello'" into Hello
+                msg = tryEvalValueCode(codeValue) || '';
+            }
         }
     } else {
-        msg = block.getFieldValue('TEXT') || '[log empty]';
+        // 4. Default if nothing is connected
+        msg = '[log empty]';
     }
-	// console.log("[log_block]" + msg);
-    await sendCommandToB4JAsync({ command: 'log', value: msg });
+
+    // 5. Execution
+    await sendCommandToB4JAsync({ command: 'log', value: String(msg) });
 });
 
 registerRuntimeGenerator('text_literal', block => async () => {

@@ -6,14 +6,27 @@
 	Brief:		Blockly example for the HomeKit32 (HK32) project.
 	Date:		20251211
 	Author:		Robert W.B. Linn (c) 2025 MIT
+	
+	Notes:		Stay with 12.3.1 UMD build, 100% compatible, stable, fastest solution.
+				Blockly must be initialized in the right order:
+				1) Define custom blocks   (Blockly.Blocks['...'])
+				2) Define custom generators (runtimeGenerators)
+				3) Prepare toolboxJson
+				4) Inject Blockly
+				5) Register runtime generators (tie workspace + blocks)
+				6) Patch runner / disable features / hide UI buttons
+
 -->
 
 <head>
 	<meta charset="utf-8">
 	<title>Blockly HomeKit32</title>
 
-	<!-- Core Blockly v12 -->
+	<!-- Core Blockly v12 = Load main Blockly library first -->
 	<script src="https://unpkg.com/blockly@12.3.1/blockly.min.js"></script>
+
+	<!-- Load the JavaScript generator after Blockly -->
+	<script src="https://unpkg.com/blockly/javascript_compressed"></script>
 
 	<style>
 	  html, body { height: 100%; margin: 0; }
@@ -40,14 +53,19 @@
 <script>
 /*
 	Notes:
-	-toolboxJson only defines the categories and the blocks
-	-the blocks as such are defined in blockly_standard_blocks.js and blockly_custom_blocks.js
-	-ensure to add generators for the blocks in blockly_generators.js
+	-toolboxJson only defines the categories and the blocks.
+	-the blocks as such are defined in blockly_standard_blocks.js and blockly_custom_blocks.js.
+	-ensure to add generators for the blocks in blockly_generators.js.
 	-if testing in browser and want to create variables then add JSON:
-    {"kind": "category","name": "Variables","custom": "VARIABLE","colour": "330"}
-	{"kind": "category","name": "Variables","colour": "330","contents": [{"kind": "block","type": "variables_get"},{"kind": "block","type": "variables_set"}]}
+		{"kind": "category","name": "Variables","custom": "VARIABLE","colour": "330"}
+		{"kind": "category","name": "Variables","colour": "330","contents": [{"kind": "block","type": "variables_get"},{"kind": "block","type": "variables_set"}]}
 	-if testing in browser use console.log
 	-DO NOT USE Blockly.inject('blocklyDiv' ... because done in blockly_app.js > window.onload
+	-Tips for B4J WebView / Runtime Integration
+		-Every block needs a runtime generator if it produces a value or triggers commands.
+		-For value blocks, define output in JSON and use evalInputAsync in the generator.
+		-For statement blocks, define previousStatement / nextStatement and use runBlockQueue in generator.
+		-Only include “Create Variable” in browser testing; hide in B4J WebView to avoid WebView issues.
 */
 const toolboxJson = {
   "kind": "categoryToolbox",

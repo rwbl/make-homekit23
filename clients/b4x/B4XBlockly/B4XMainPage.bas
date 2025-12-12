@@ -279,6 +279,7 @@ Public Sub HandleBLEConnect(state As Boolean)
 		TileEventViewer.Insert($"[HandleBLEConnect] ${"Disconnected"} from ${BLEConstants.BLE_DEVICE_NAME}"$, HMITileUtils.EVENT_LEVEL_ALARM)
 	End If
 	IsConnected = state
+	BlocklySetVariable("connected", Convert.BoolToByte(IsConnected))
 End Sub
 
 ' HandleBLENotification
@@ -331,14 +332,19 @@ Sub WebViewBlockly_Event(MethodName As String, Args() As Object)
 				Dim command As String = jRoot.Get("command")
 				TileEventViewer.Insert($"[WebViewBlockly_Event] command=${command}"$, HMITileUtils.EVENT_LEVEL_INFO)
 			
-				If command == "start" Then TileEventViewer.Clear
-				If command = "getvariable" Then
-					Dim varName As String = jRoot.Get("variable")
-            		Dim value As Object = jRoot.Get("value")
-            		Log("Variable " & varName & " = " & value)
-				End If
-
-				RunCommand(Commands.Find(command.Replace("_", " ")))
+				Select command
+					Case "start"
+						TileEventViewer.Clear
+						BlocklySetVariable("connected", 0)
+					Case "stop"
+						BlocklySetVariable("connected", 0)
+					Case "getvariable"
+						Dim varName As String = jRoot.Get("variable")
+						Dim value As Object = jRoot.Get("value")
+						Log("Variable " & varName & " = " & value)
+					Case Else
+						RunCommand(Commands.Find(command.Replace("_", " ")))
+				End Select
 			Catch
 				TileEventViewer.Insert($"[WebViewBlockly_Event][E] ${LastException}"$, HMITileUtils.EVENT_LEVEL_ALARM)
 			End Try			
@@ -357,7 +363,7 @@ Private Sub RunCommand(command As TCommand)
 			' BLE Connect (value = 1) - see also HandleBLEConnect
 			If command.Value(0) = BLEConstants.STATE_ON Then
 				If Not(IsConnected) Then
-					TileEventViewer.Insert($"[TileListCommands_ItemClick] Connecting... ${BLEConstants.BLE_DEVICE_NAME}"$, HMITileUtils.EVENT_LEVEL_INFO)
+					TileEventViewer.Insert($"[RunCommand] Connecting... ${BLEConstants.BLE_DEVICE_NAME}"$, HMITileUtils.EVENT_LEVEL_INFO)
 					#if B4A
 					Connect
 					#End If
@@ -375,7 +381,7 @@ Private Sub RunCommand(command As TCommand)
 			' BLE Disconnect (value = 0) - see also HandleBLEConnect
 			If command.Value(0) = BLEConstants.STATE_OFF Then
 				If IsConnected Then
-					TileEventViewer.Insert($"[TileListCommands_ItemClick] Disconnecting... ${BLEConstants.BLE_DEVICE_NAME}"$, HMITileUtils.EVENT_LEVEL_WARNING)
+					TileEventViewer.Insert($"[RunCommand] Disconnecting... ${BLEConstants.BLE_DEVICE_NAME}"$, HMITileUtils.EVENT_LEVEL_WARNING)
 					#if B4A
 					Disconnect
 					#End If
@@ -398,9 +404,9 @@ Private Sub RunCommand(command As TCommand)
 			BLEMgr.WriteData(BLEConstants.SERVICE_UUID.ToLowerCase, _
 							 BLEConstants.CHAR_UUID_TX.ToLowerCase, _
 							 Commands.BuildPayload(command))
-			TileEventViewer.Insert($"[TileListCommands_ItemClick] Command succesful ${command.Name}"$, HMITileUtils.EVENT_LEVEL_INFO)
+			TileEventViewer.Insert($"[RunCommand] Command succesful ${command.Name}"$, HMITileUtils.EVENT_LEVEL_INFO)
 		Else
-			TileEventViewer.Insert($"[TileListCommands_ItemClick] Command failed, BLE not connected."$, HMITileUtils.EVENT_LEVEL_ALARM)
+			TileEventViewer.Insert($"[RunCommand] Command failed, BLE not connected."$, HMITileUtils.EVENT_LEVEL_ALARM)
 			Return
 		End If
 		#End If
@@ -409,9 +415,9 @@ Private Sub RunCommand(command As TCommand)
 		' Handle device commands
 		If BLEMgr.IsConnected Then
 			BLEMgr.Write(Commands.BuildPayload(command))
-			TileEventViewer.Insert($"[TileListCommands_ItemClick] Command succesful ${command.Name}"$, HMITileUtils.EVENT_LEVEL_INFO)
+			TileEventViewer.Insert($"[RunCommand] Command succesful ${command.Name}"$, HMITileUtils.EVENT_LEVEL_INFO)
 		Else
-			TileEventViewer.Insert($"[TileListCommands_ItemClick] Command failed, BLE not connected."$, HMITileUtils.EVENT_LEVEL_ALARM)
+			TileEventViewer.Insert($"[RunCommand] Command failed, BLE not connected."$, HMITileUtils.EVENT_LEVEL_ALARM)
 			Return
 		End If
 		#End If
@@ -489,14 +495,20 @@ End Sub
 
 
 Private Sub ButtonTest_Click
+	BlocklySetVariable("connected", 1)
+	
+	Return
+
 	' Create the webview engine object
 	Dim engine As JavaObject = GetEngine(WebViewBlockly)
 
 	engine.RunMethod("executeScript", Array("getVariable('x')"))
 
 	Try
-		engine.RunMethod("executeScript", Array("setVariable('x', 1958)"))
-		engine.RunMethod("executeScript", Array("setVariable('abc', 123)"))
+		engine.RunMethod("executeScript", Array("setVariable('connected', 0)"))
+'		engine.RunMethod("executeScript", Array("setVariable('connected', 1958)"))
+'		engine.RunMethod("executeScript", Array("setVariable('x', 1958)"))
+'		engine.RunMethod("executeScript", Array("setVariable('abc', 123)"))
 	Catch
 		Log($"[ExecuteScript]]E]${LastException}"$)
 	End Try
@@ -516,6 +528,19 @@ Public Sub GetEngine(wv As WebView) As JavaObject
 	Dim jo As JavaObject = wv
 	Return jo.RunMethod("getEngine", Null)
 End Sub
+
+' BlocklySetVariable("connected", 1)
+Public Sub BlocklySetVariable(variable As String, value As String)
+	Dim engine As JavaObject = GetEngine(WebViewBlockly)
+	Dim var As String = $"setVariable("${variable}", ${value})"$
+	Log($"[BlocklySetVariable] var=${var}"$)
+	Try
+		engine.RunMethod("executeScript", Array(var))
+	Catch
+		Log($"[BlocklySetVariable]]E]${LastException}"$)
+	End Try
+End Sub
+
 #end region
 
 Public Sub IsJson(text As String) As Boolean
