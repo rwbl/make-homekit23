@@ -1,135 +1,100 @@
 /*
-	Project:	HomeKit32
-	File:		blockly_app.js
-	Brief:		Button handler and communication with B4J using redirected alert function.
+	Project: HomeKit32
+	File:    blockly_app.js
+	Brief:   Blockly v12 app for B4J integration
+	Author:  Robert W.B. Linn (c) 2025 MIT
 */
 
+// ======================================================================
+// GLOBAL VARIABLES
+// ======================================================================
+window.workspace = null;
+window.workspaceVars = {}; // RAM for variables
+window.sendCommandToB4JAsync = async function(obj) {
+    // Default implementation uses alert for testing
+    alert(JSON.stringify(obj));
+};
 
 // ======================================================================
-// GLOBAL FUNCTIONS
+// RUN BLOCKS
 // ======================================================================
-// Notes
-// B4J executeScript() requires a synchronous return value (do not define as async)
+window.runBlockQueue = async function(blocks) {
+    console.log("runBlockQueue length:", blocks.length);
+    for (const fn of blocks) {
+        if (typeof fn === "function") {
+            try {
+                await fn();
+            } catch(e) {
+                console.error("Block execution error:", e);
+            }
+        } else {
+            console.warn("Not a function in queue:", fn);
+        }
+    }
+};
 
-// ======================================================================
-// Run all blocks in the workspace
-// ======================================================================
-function runWorkspaceBlocks() {
-	runWorkspaceBlocksAsync();
+async function queueBlockAsync(block, queue) {
+    const code = Blockly.JavaScript.blockToCode(block);
+
+    if (!code) {
+        console.warn("No code produced for block:", block.type);
+        return;
+    }
+
+    // blockToCode may return array in case of statements + value blocks
+    const js = Array.isArray(code) ? code[0] : code;
+
+    // Wrap code in async function
+    const fn = new Function("sendCommandToB4JAsync", `
+        return (async () => {
+            ${js}
+        });
+    `)(sendCommandToB4JAsync);
+
+    queue.push(fn);
+
+    const next = block.getNextBlock();
+    if (next) await queueBlockAsync(next, queue);
 }
 
+// Execute all top-level blocks
 async function runWorkspaceBlocksAsync() {
-    const topBlocks = window.workspace.getTopBlocks(true);
+    const ws = window.workspace;
+    if (!ws) return;
+    const topBlocks = ws.getTopBlocks(true);
+    console.log("Top blocks count:", topBlocks.length);
     const queue = [];
-
-    // Flatten top-level blocks into async functions
     for (const block of topBlocks) {
         await queueBlockAsync(block, queue);
     }
-
-    // Execute sequentially
     await window.runBlockQueue(queue);
 }
 
-// Recursively push blocks into queue
-async function queueBlockAsync(block, queue) {
-    const gen = Blockly.JavaScript[block.type];
-    if (gen) {
-        queue.push(gen(block));
-    }
 
-    // Handle "next block" for top-level sequence
-    const next = block.getNextBlock();
-    if (next) {
-        await queueBlockAsync(next, queue);
-    }
-}
-
-async function runIfChain(startBlock) {
-    let matched = await Blockly.JavaScript[startBlock.type](startBlock)();
-
-    let next = startBlock.getNextBlock();
-    while (next && next.type === 'logic_else_if') {
-        matched = await Blockly.JavaScript['logic_else_if'](next)(matched);
-        next = next.getNextBlock();
-    }
-
-    if (next && next.type === 'logic_else') {
-        if (!matched) {
-            const list = [];
-            let c = next.getInputTargetBlock('DO');
-            while (c) {
-                list.push(Blockly.JavaScript[c.type](c));
-                c = c.getNextBlock();
-            }
-            await runBlockQueue(list);
-        }
-    }
+function runWorkspaceBlocks() {
+    runWorkspaceBlocksAsync();
 }
 
 // ======================================================================
-// BASE64 SAVE/LOAD
+// VARIABLES (get/set)
 // ======================================================================
-
-// Save workspace: returns XML text encoded in Base64
-function saveWorkspaceBase64() {
-    const xml = Blockly.Xml.workspaceToDom(window.workspace);
-    const xmlText = Blockly.Xml.domToText(xml);
-	// Base64 encode
-    return btoa(xmlText); 
-}
-
-// Load workspace from Base64 string
-function loadWorkspaceBase64(base64Text) {
-    try {
-        const xmlText = atob(base64Text); // Base64 decode
-        const xml = Blockly.Xml.textToDom(xmlText);
-        window.workspace.clear();
-        Blockly.Xml.domToWorkspace(xml, window.workspace);
-        console.log("[loadWorkspaceBase64] Workspace loaded");
-    } catch (e) {
-        console.error("[loadWorkspaceBase64] Failed:", e);
-    }
-}
-
-// ======================================================================
-// VARIABLES
-// ======================================================================
-
-// getVariable
-// Get the value of a workspace variable and send to B4J.
 async function getVariable(varName) {
-    // get value from workspaceVars
     const value = window.workspaceVars[varName];
-    // send it back to B4J
-    await sendCommandToB4JAsync({
-        command: "getvariable",
-        variable: varName,
-        value: value
-    });
+    await sendCommandToB4JAsync({ command: "getvariable", variable: varName, value: value });
 }
 
-// setVariable
-// Set & refresh a workspace variable from B4J.
 async function setVariable(varName, varValue) {
-    window.workspaceVars = window.workspaceVars || {}; // ensure workspaceVars exists
+    window.workspaceVars = window.workspaceVars || {};
+    window.workspaceVars[varName] = varValue;
 
-    // Get the canonical Blockly variable from the workspace
-    const variable = Blockly.Variables.getVariable(workspace, varName); // workspace = your Blockly workspace
-    const name = variable ? variable.name : varName; // fallback to raw name
+    const variable = Blockly.Variables.getVariable(window.workspace, varName);
+    const name = variable ? variable.name : varName;
 
-    window.workspaceVars[name] = varValue;
-	
-	// Refresh all variable blocks that reference this variable
-    workspace.getAllBlocks(false).forEach(block => {
+    window.workspace.getAllBlocks(false).forEach(block => {
         if (block.type === 'variables_set' || block.type === 'variables_get') {
             const field = block.getField('VAR');
-
-			// Compare using Blockly’s getVariableById to match canonical variable
-			const blockVar = Blockly.Variables.getVariable(workspace, field.getValue()) || {};
-
+            const blockVar = Blockly.Variables.getVariable(window.workspace, field.getValue()) || {};
             if (blockVar.name === name) {
-                // For variables_set, update the VALUE input display (optional)
                 const input = block.getInput('VALUE');
                 if (input) {
                     const childBlock = input.connection.targetBlock();
@@ -138,85 +103,123 @@ async function setVariable(varName, varValue) {
                         childBlock.render();
                     }
                 }
-                block.render(); // redraw the block
+                block.render();
             }
         }
     });
 }
 
+// ==========================
+// SAVE / LOAD WORKSPACE (Base64, Blockly v12 compatible)
+// ==========================
+
+// Helper: safe DOM parse for XML text (works in v12 and WebView)
+function textToDomSafe(xmlText) {
+    return new DOMParser().parseFromString(xmlText, 'text/xml').documentElement;
+}
+
+// Save workspace to Base64
+function saveWorkspaceBase64() {
+    const ws = window.workspace;
+    if (!ws) return '';
+    try {
+        const xmlDom = Blockly.Xml.workspaceToDom(ws);
+        const xmlText = Blockly.Xml.domToText(xmlDom);
+        return btoa(unescape(encodeURIComponent(xmlText))); // UTF-8 safe Base64
+    } catch (e) {
+        console.error('[saveWorkspaceBase64] Failed:', e);
+        return '';
+    }
+}
+
+// Load workspace from Base64
+function loadWorkspaceBase64(base64Text) {
+    const ws = window.workspace;
+    if (!ws) return;
+    try {
+        const xmlText = decodeURIComponent(escape(atob(base64Text))); // UTF-8 safe decode
+        const xmlDom = textToDomSafe(xmlText);
+        ws.clear();
+        Blockly.Xml.domToWorkspace(xmlDom, ws);
+        console.log('[loadWorkspaceBase64] Workspace loaded');
+        alert('[loadWorkspaceBase64] Workspace loaded');
+    } catch (e) {
+        console.error('[loadWorkspaceBase64] Failed:', e);
+        alert('[loadWorkspaceBase64] Failed: ' + (e.message || e));
+    }
+}
+
+// Expose functions for B4J calls with alias for backward compatibility
+window.saveWorkspaceBase64 = saveWorkspaceBase64;
+window.saveWorkspace = saveWorkspaceBase64; 
+window.loadWorkspaceBase64 = loadWorkspaceBase64;
+window.loadWorkspace = loadWorkspaceBase64; 
+
+// ========================================================
+// CREATE VAR - Call from B4J when user enters a variable name
+// ========================================================
+function setNewVariable(name) {
+    if (!name) return;
+
+    // Add variable to Blockly workspace
+    const ws = window.workspace || Blockly.getMainWorkspace();
+    if (!ws) return;
+
+    const varMap = ws.getVariableMap();
+    const existing = varMap.getVariable(name);
+    if (!existing) {
+        ws.createVariable(name);
+        console.log("Variable created from B4J:", name);
+    } else {
+        console.log("Variable already exists:", name);
+    }
+}
+
 // ======================================================================
-// BLOCKLY WORKSPACE
+// ONLOAD: Inject Blockly
 // ======================================================================
 window.onload = function () {
+    // Inject workspace with JSON toolbox (replace toolboxJson with your JSON)
+    window.workspace = Blockly.inject('blocklyDiv', {
+        toolbox: toolboxJson,
+        collapse: false,
+        comments: true,
+        disable: false,
+        sounds: false
+    });
 
-    // Inject Blockly
-	window.workspace = Blockly.inject('blocklyDiv', {
-		toolbox: document.getElementById('toolbox'),
-		// enable variables
-		collapse: false,
-		comments: true,
-		disable: false,
-		sounds: false
-	});
-
-	// Initialize the generator (very important!)
+    // Initialize JS generator
     Blockly.JavaScript.init(window.workspace);
-	
-	// Workspace variable storage (for async execution)
-	// Initialize workspaceVars as RAM for async blocks
-	window.workspaceVars = {};  // { varName: value }
-	
-	// Run all blocks sequentially
-	window.runBlockQueue = async function(blocks) {
-		for (const fn of blocks) {
-			if (typeof fn === "function") {
-				await fn(); // execute async block
-			}
+
+	// ============================================================================
+	// RUNTIME DELEGATOR — forces use of new v12 async generators if available
+	// ============================================================================
+
+	// Patch runWorkspaceBlocks() so B4J calls use the v12 runtime
+	window.runWorkspaceBlocks = function() {
+		if (window._hk32_runWorkspaceBlocksAsync) {
+			// Prefer new runtime from blockly_generators.js
+			window._hk32_runWorkspaceBlocksAsync();
+		} else if (typeof runWorkspaceBlocksAsync === 'function') {
+			// Fallback to old legacy runner
+			runWorkspaceBlocksAsync();
+		} else {
+			console.error("No runWorkspaceBlocks available");
 		}
-	}
-
-	// Send command to B4J using alert
-	window.sendCommandToB4JAsync = async function(obj) {
-		alert(JSON.stringify(obj));
 	};
 
-	// Button Run to execute the blocks on the workspace
-	// This is used for testing in a webbrowser
-	document.getElementById('btnRun').onclick = async function() {
-		const topBlocks = workspace.getTopBlocks(true);
-		const queue = [];
+	// Patch the RUN button (if it exists)
+	(function() {
+		const btn = document.getElementById("btnRun");
+		if (!btn) return;
 
-		// Convert top-level blocks to async functions
-		topBlocks.forEach(block => {
-			const gen = Blockly.JavaScript[block.type];
-			if (gen) queue.push(gen(block));
-		});
+		btn.onclick = function() {
+			window.runWorkspaceBlocks();
+			
+			// Example testing some other function
+			// base64 = 'PHhtbCB4bWxucz0iaHR0cHM6Ly9kZXZlbG9wZXJzLmdvb2dsZS5jb20vYmxvY2tseS94bWwiPjxibG9jayB0eXBlPSJsb2dfYmxvY2siIGlkPSJHbVZSKiRRMUN1Zl5IPXA0c0A3PSIgeD0iMTQ1IiB5PSIxNjIiPjx2YWx1ZSBuYW1lPSJURVhUIj48YmxvY2sgdHlwZT0idGV4dF9saXRlcmFsIiBpZD0ibHwsKk5ieGtTYWtQbSxLdTpiWVIiPjxmaWVsZCBuYW1lPSJURVhUIj5YPC9maWVsZD48L2Jsb2NrPjwvdmFsdWU+PC9ibG9jaz48L3htbD4=';
+			// loadWorkspace(base64);
+		};
+	})();
 
-		// Run everything sequentially
-		await runBlockQueue(queue);
-	};
-
-	/*
-		OLD CODE using HTML buttons
-	// Button Save Workspace
-    document.getElementById('btnSaveWorkspace').onclick = function() {
-        const xml = Blockly.Xml.workspaceToDom(workspace);
-        const xmlText = Blockly.Xml.domToText(xml);
-        alert(xmlText);
-    };
-
-    // Button Load Workspace
-    document.getElementById('btnLoadWorkspace').onclick = function() {
-        const xmlText = prompt("Paste workspace XML here:");
-        if (!xmlText) return;
-        try {
-            const xml = Blockly.Xml.textToDom(xmlText);
-            workspace.clear();
-            Blockly.Xml.domToWorkspace(xml, workspace);
-        } catch(e) {
-            alert("[btnLoadWorkspace][E] Failed to load workspace XML:", e);
-            console.error("[btnLoadWorkspace][E] Failed to load workspace XML:", e);
-        }
-    };
-	*/
 };

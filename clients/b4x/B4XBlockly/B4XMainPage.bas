@@ -6,20 +6,23 @@ Version=9.85
 @EndOfDesignText@
 #Region Class Header
 ' File:			HK32Blockly
-' Brief:		Client controlling the HomeKit32 via BLE using Blockly.
+' Brief:		Client controlling the HomeKit32 via BLE using Google Blockly.
 ' Date:			2025-12-11
 ' Author:		Robert W.B. Linn (c) 2025 MIT
-' Description:	This B4J application (app) connects as a client with an ESP32 running as Bluetooth Low Energy (BLE) server.
-'				The BLE-Server advertises DHT22 sensor data temperature & humidity and listens to commands send from connected clients.
-'				The communication between the B4J-Client and the BLE-Server is managed by the PyBridge with Bleak.
+' Description:	This B4J application (app) is developed to explore how to create & interact with Blockly.
+'				This application connects as a client with an ESP32 running as BLE Peripheral + GATT Server using UART services.
+'				The communication between the B4J-Client and the BLE Peripheral is managed by the PyBridge with Bleak.
 '				The data is passed thru the PyBridge and to be handled by client or BLE server.
-' Software: 	B4J 10.30(64 bit), Java JDK 19
+' Software: 	B4J 10.30(64 bit), Java JDK 19, Blockly 8.
 ' Libraries:	PyBridge 1.00, Bleak 1.02, ByteConverter 1.10
 ' Bleak:		Install:
 '				Set python path under Tools: C:\Prog\B4J\Libraries\Python\python\python.exe
 '				Open global Python shell: ide://run?File=%B4J_PYTHON%\..\WinPython+Command+Prompt.exe
 '				From folder C:\Prog\B4J\Libraries\Python\Notebooks> run: pip install bleak
 '				https://www.b4x.com/android/forum/threads/pybridge-bleak-bluetooth-ble.165982/
+' Blockly:		HTML & Javascript source are located in the dirapp folder.
+'				The Core Blockly used is https://unpkg.com/blockly@8.0.0/blockly.min.js
+
 ' Notes:		Export as zip: ide://run?File=%B4X%\Zipper.jar&Args=Project.zip
 '				Create a local Python runtime:   ide://run?File=%WINDIR%\System32\Robocopy.exe&args=%B4X%\libraries\Python&args=Python&args=/E
 '				Open local Python shell: ide://run?File=%PROJECT%\Objects\Python\WinPython+Command+Prompt.exe
@@ -38,7 +41,8 @@ Private Sub Class_Globals
 	Private Const COPYRIGHT As String = "HomeKit32 Blockly Example by Robert W.B. Linn (c) 2025 MIT"
 		
 	Private Const WORKSPACE_DEFAULT_FILE As String = "workspace.xml"
-
+	Private Const WORKSPACE_DEFAULT_VAR As String = "x"
+	
 	' Core
 	Private fx As JFX
 		
@@ -55,6 +59,9 @@ Private Sub Class_Globals
 	Private ButtonTest As B4XView
 	Private LabelInfo As B4XView
 
+	' Dialog
+	Private Dialog As B4XDialog
+
 	' BLE
 	#if B4A
 	Private BLEMgr As BleManager2
@@ -67,6 +74,7 @@ Private Sub Class_Globals
 	
 	' BLE Commands
 	Private Commands As BLECommands
+	Private ButtonCreateVar As B4XView
 End Sub
 
 #Region B4XPages
@@ -90,6 +98,10 @@ Private Sub B4XPage_Created (Root1 As B4XView)
 	Sleep(1)
 	B4XPages.SetTitle(Me, VERSION)
 	TileEventViewer.Title = $"Event Log"$
+
+	' UI - B4XDialog
+	Dialog.Initialize(Root)
+	Dialog.Title = ""
 	
 	' WebViewBlockly Initialize
 	' Load Blockly HTML. JS will be injected in PageFinished (after load).
@@ -412,39 +424,69 @@ End Sub
 Private Sub ButtonRun_Click
     Dim engine As JavaObject = GetEngine(WebViewBlockly)
     ' Call the JS function to run all blocks
-    engine.RunMethod("executeScript", Array("runWorkspaceBlocks()"))
+	engine.RunMethod("executeScript", Array("runWorkspaceBlocks()"))
 End Sub
 
 Private Sub ButtonSave_Click
-	Dim engine As JavaObject = GetEngine(WebViewBlockly)
-	' Call JS function and get Base64 workspace
-	Dim base64 As String = engine.RunMethod("executeScript", Array("saveWorkspaceBase64()"))
-	If base64 <> Null And base64.Length > 0 Then
-		Try
-			Dim xml As String = DecodeBase64(base64)
-			File.WriteString(File.DirApp, WORKSPACE_DEFAULT_FILE, xml)
-			TileEventViewer.Insert($"[ButtonLoad] Workspace saved successfully"$, HMITileUtils.EVENT_LEVEL_INFO)
-		Catch
-			TileEventViewer.Insert($"[ButtonSave] Workspace not saved ${LastException}"$, HMITileUtils.EVENT_LEVEL_ALARM)
-		End Try
+	Dim input As B4XInputTemplate
+	input.Initialize
+	input.lblTitle.Text = "Save Workspace"
+	input.Text = WORKSPACE_DEFAULT_FILE
+	Wait For (Dialog.ShowTemplate(input, "OK", "", "CANCEL")) Complete (Result As Int)
+	If Result = xui.DialogResponse_Positive Then
+		Dim engine As JavaObject = GetEngine(WebViewBlockly)
+		' Call JS function and get Base64 workspace
+		Dim base64 As String = engine.RunMethod("executeScript", Array("saveWorkspace()"))
+		If base64 <> Null And base64.Length > 0 Then
+			Try
+				Dim xml As String = base64	'DecodeBase64(base64)
+				File.WriteString(File.DirApp, input.Text, xml)
+				TileEventViewer.Insert($"[ButtonLoad] Workspace saved successfully to ${input.Text}"$, HMITileUtils.EVENT_LEVEL_INFO)
+			Catch
+				TileEventViewer.Insert($"[ButtonSave] Workspace not saved ${LastException}"$, HMITileUtils.EVENT_LEVEL_ALARM)
+			End Try
+		End If
 	End If
 End Sub
 
 Private Sub ButtonLoad_Click
-	Dim engine As JavaObject = GetEngine(WebViewBlockly)
-	If File.Exists(File.DirApp, WORKSPACE_DEFAULT_FILE) Then
-		Try
-			Dim xml As String = File.ReadString(File.DirApp, WORKSPACE_DEFAULT_FILE)
-			If xml.Length > 0 Then
-				Dim base64 As String = EncodeBase64(xml)
-				engine.RunMethod("executeScript", Array($"loadWorkspaceBase64('${base64}')"$))
-				TileEventViewer.Insert($"[ButtonLoad] Workspace loaded successfully"$, HMITileUtils.EVENT_LEVEL_INFO)
-			End If
-		Catch
-			TileEventViewer.Insert($"[ButtonLoad] Workspace not loaded ${LastException}"$, HMITileUtils.EVENT_LEVEL_ALARM)
-		End Try
+	Dim input As B4XInputTemplate
+	input.Initialize
+	input.lblTitle.Text = "Load Workspace"
+	input.Text = WORKSPACE_DEFAULT_FILE
+	Wait For (Dialog.ShowTemplate(input, "OK", "", "CANCEL")) Complete (Result As Int)
+	If Result = xui.DialogResponse_Positive Then
+		Dim engine As JavaObject = GetEngine(WebViewBlockly)
+		If File.Exists(File.DirApp, input.Text) Then
+			Try
+				Dim xml As String = File.ReadString(File.DirApp, input.Text)
+				If xml.Length > 0 Then
+					Dim base64 As String = xml	' EncodeBase64(xml)
+					engine.RunMethod("executeScript", Array($"loadWorkspace("${base64}")"$))
+					TileEventViewer.Insert($"[ButtonLoad] Workspace loaded successfully from ${input.Text}"$, HMITileUtils.EVENT_LEVEL_INFO)
+				End If
+			Catch
+				TileEventViewer.Insert($"[ButtonLoad] Workspace not loaded ${LastException}"$, HMITileUtils.EVENT_LEVEL_ALARM)
+			End Try
+		End If
 	End If
 End Sub
+
+Private Sub ButtonCreateVar_Click
+	Dim input As B4XInputTemplate
+	input.Initialize
+	input.lblTitle.Text = "Create Variable"
+	input.Text = WORKSPACE_DEFAULT_VAR
+	Wait For (Dialog.ShowTemplate(input, "OK", "", "CANCEL")) Complete (Result As Int)
+	If Result = xui.DialogResponse_Positive Then
+		Dim engine As JavaObject = GetEngine(WebViewBlockly)
+		If input.text <> "" Then
+			engine.RunMethod("executeScript", Array($"setNewVariable("${input.text}")"$))
+			TileEventViewer.Insert($"[ButtonCreateVar] New variable created ${input.Text}"$, HMITileUtils.EVENT_LEVEL_INFO)
+		End If
+	End If
+End Sub
+
 
 Private Sub ButtonTest_Click
 	' Create the webview engine object
@@ -459,8 +501,6 @@ Private Sub ButtonTest_Click
 		Log($"[ExecuteScript]]E]${LastException}"$)
 	End Try
 
-	Return
-
 	Dim obj As Object = engine.RunMethod("executeScript", Array("setDeviceState('yellow_led', 'ON')"))
 
 	Dim tempValue As Float	= 22.3
@@ -468,13 +508,6 @@ Private Sub ButtonTest_Click
 	obj = engine.RunMethod("executeScript", Array($"setDeviceDHT11(${tempValue},${humValue})"$))
 	Log(obj)
 End Sub
-
-' ------------------------------
-' Logging Helper
-' ------------------------------
-'Public Sub AppLog(msg As String)
-'	Log($"${DateTime.Date(DateTime.Now)} ${DateTime.Time(DateTime.Now)}: ${msg}"$)
-'End Sub
 
 ' ------------------------------
 ' Helper to access the WebEngine via JavaObject

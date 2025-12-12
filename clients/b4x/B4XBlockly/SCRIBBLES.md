@@ -198,3 +198,72 @@ End Sub
     workspace.createVariable('y');
     workspace.createVariable('z');
 
+## isFXWebView
+
+	// Detect if running inside B4J WebView
+	window.isFXWebView = navigator.userAgent.includes("JavaFX");
+	console.log("isFXWebView:" + window.isFXWebView);
+	alert("isFXWebView:" + window.isFXWebView);
+
+## Save/Load workspace
+
+// ======================================================================
+// SAVE / LOAD WORKSPACE
+// ======================================================================
+/*
+function saveWorkspaceBase64() {
+    const xml = Blockly.Xml.workspaceToDom(window.workspace);
+    const xmlText = Blockly.Xml.domToText(xml);
+    console.log("Saved Workspace XML:", xmlText);  // Debugging: log the XML
+    alert("Saved Workspace XML:", xmlText);  // Debugging: log the XML
+    return btoa(xmlText);  // Base64 encode the XML
+}
+
+function loadWorkspaceBase64(base64Text) {
+    try {
+        const xmlText = atob(base64Text);
+        console.log("Loaded Workspace XML:", xmlText);  // Debugging: log the loaded XML
+        alert("Loaded Workspace XML:", xmlText);  // Debugging: log the loaded XML
+        const xml = Blockly.Xml.textToDom(xmlText);
+        window.workspace.clear();
+        Blockly.Xml.domToWorkspace(xml, window.workspace);
+        console.log("[loadWorkspaceBase64] Workspace loaded");
+        alert("[loadWorkspaceBase64] Workspace loaded");
+    } catch (e) {
+        console.error("[loadWorkspaceBase64] Failed:", e.message);
+        console.error("Error Stack:", e.stack);
+        alert("[loadWorkspaceBase64] Failed:", e.message);
+        alert("Error Stack:", e.stack);
+    }
+}
+*/
+
+// Save workspace: returns XML text encoded in Base64
+function saveWorkspace() {
+    const xml = Blockly.Xml.workspaceToDom(window.workspace);
+    const xmlText = Blockly.Xml.domToText(xml);
+    alert("Saved Workspace XML:", xmlText);  // Debugging: log the XML
+	// Base64 encode
+    return btoa(xmlText); 
+}
+
+// Load workspace from Base64 string
+function textToDomSafe(xmlText) {
+    // In v12+, XML parsing uses DOMParser
+    return new DOMParser().parseFromString(xmlText, 'text/xml').documentElement;
+}
+function loadWorkspace(base64Text) {
+    const ws = window.workspace;
+    if (!ws) return;
+    try {
+        const xmlText = atob(base64Text); // Base64 decode
+        const xml = textToDomSafe(xmlText);
+        ws.clear();
+        Blockly.Xml.domToWorkspace(xml, ws);
+        console.log("[loadWorkspaceBase64] Workspace loaded");
+        alert("[loadWorkspaceBase64] Workspace loaded");
+    } catch (e) {
+        console.error("[loadWorkspaceBase64] Failed:", e);
+        alert("[loadWorkspaceBase64] Failed:", e);
+    }
+}

@@ -25,6 +25,6 @@ ModuleClosedNodes5=
 ModuleClosedNodes6=
 ModuleClosedNodes7=
 ModuleClosedNodes8=
-NavigationStack=B4XMainPage,B4XPage_Created,79,2,Visual Designer,MainPage.bjl,-100,6,B4XMainPage,Class_Globals,30,3,B4XMainPage,HandleBLEConnect,261,0,B4XMainPage,PyBridgeDisconnected,167,0,B4XMainPage,WebViewBlockly_PageFinished,316,0,B4XMainPage,WebViewBlockly_Event,316,6,B4XMainPage,RunCommand,331,6,B4XMainPage,DecodeBase64,508,0,B4XMainPage,ButtonTest_Click,449,6
+NavigationStack=Visual Designer,MainPage.bjl,-100,4,B4XMainPage,ButtonRun_Click,417,0,B4XMainPage,GetEngine,491,0,B4XMainPage,Class_Globals,38,6,B4XMainPage,DecodeBase64,557,0,B4XMainPage,ButtonTest_Click,496,0,B4XMainPage,RunCommand,416,0,B4XMainPage,ButtonCreateVar_Click,470,6,B4XMainPage,ButtonSave_Click,436,3,B4XMainPage,ButtonLoad_Click,460,6
 SelectedBuild=0
 VisibleModules=1,2,3,4,5,6,7,8

@@ -53,8 +53,15 @@ Blockly.defineBlocksWithJsonArray([
 		"colour": 60
 	},
 	{
-		"type": "open_door",
+		"type": "door_open",
 		"message0": "Open Door",
+		"previousStatement": null,
+		"nextStatement": null,
+		"colour": 160
+	},
+	{
+		"type": "door_close",
+		"message0": "Close Door",
 		"previousStatement": null,
 		"nextStatement": null,
 		"colour": 160
