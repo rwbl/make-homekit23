@@ -92,8 +92,8 @@ function setDeviceDHT11(temp, hum) {
     const allBlocks = workspace.getAllBlocks();
     allBlocks.forEach(block => {
 		if (block.type === DEV_DHT11) {
-			block.setFieldValue(temp, "DHT11TEMP");
-			block.setFieldValue(hum, "DHT11HUM");
+			block.setFieldValue(temp, "TEMP");
+			block.setFieldValue(hum, "HUM");
 			// Set color based on humidity	
             if (hum > 80) block.setColour(30);   // warning orange
             else if (hum > 60) block.setColour(60); // safe yellow

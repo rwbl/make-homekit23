@@ -76,16 +76,34 @@ Blockly.defineBlocksWithJsonArray([
 		"nextStatement": null,
 		"colour": 120
 	},
+	
 	{
 		"type": "dht11_sensor",
 		"message0": "DHT11 Sensor Temp %1 °C Hum %2 %",
 		"args0": [
-		  { "type": "field_number", "name": "DHT11TEMP", "value": 0 },
-		  { "type": "field_number", "name": "DHT11HUM", "value": 0 }
+		  { "type": "field_number", "name": "TEMP", "value": 0 },
+		  { "type": "field_number", "name": "HUM", "value": 0 }
 		],
 		"previousStatement": null,
 		"nextStatement": null,
 		"colour": 60
+	},
+	
+	{
+		"type": "show_variable",
+		"message0": "show variable %1",
+		"args0": [
+			{
+			  "type": "field_variable",
+			  "name": "VAR",
+			  "variable": "BLE_CONNECTED"
+			}
+		],
+		"previousStatement": null,
+		"nextStatement": null,
+		"colour": 210,
+		"tooltip": "Show the current value of a variable",
+		"helpUrl": ""
 	}
 
 ]);

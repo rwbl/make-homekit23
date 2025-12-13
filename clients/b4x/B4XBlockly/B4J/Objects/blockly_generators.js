@@ -81,69 +81,38 @@ function tryEvalValueCode(code) {
     }
 }
 
+// Evaluate an input which may be a runtime-generated async function, or a built-in value block
 async function evalInputAsync(block, inputName, defaultValue = null) {
     const inputBlock = block.getInputTargetBlock(inputName);
     if (!inputBlock) return defaultValue;
 
-    // If a runtime generator exists for that block type, call it
+    // 1. If a runtime generator exists for that block type, call it
     const runtimeGen = runtimeGenerators[inputBlock.type];
     if (runtimeGen) {
-        let val = await runtimeGen(inputBlock)(); // <-- important: call the returned function
-        // unwrap nested functions (some generators may return functions)
+        let val = await runtimeGen(inputBlock)(); 
         while (typeof val === 'function') val = await val();
         return val === undefined ? defaultValue : val;
     }
 
-    // fallback: evaluate as string or number
+    // 2. FALLBACK: evaluate using the v12 JavaScript Generator
     try {
-        const codeValue = Blockly.JavaScript.valueToCode(inputBlock, '', Blockly.JavaScript.ORDER_ATOMIC);
-        const v = tryEvalValueCode(codeValue);
-        return v === undefined ? defaultValue : v;
+        // V12 FIX: Use javascript.javascriptGenerator and its specific Order
+        const generator = javascript.javascriptGenerator;
+        
+        if (generator) {
+            // Note: In v12, you usually pass the 'block' (parent) and the inputName
+            // and the generator handles finding the child.
+            const codeValue = generator.valueToCode(block, inputName, javascript.Order.ATOMIC);
+            const v = tryEvalValueCode(codeValue);
+            return v === undefined ? defaultValue : v;
+        }
     } catch (e) {
+        console.error("Eval failed for input:", inputName, e);
         return defaultValue;
     }
+    
+    return defaultValue;
 }
-
-/*
-// Evaluate an input which may be a runtime-generated async function, or a built-in value block
-async function evalInputAsync(block, inputName, defaultValue = null) {
-    let inputBlock = block.getInputTargetBlock(inputName);
-
-    // If no real block, check if a shadow block exists
-    if (!inputBlock) {
-        const inputConnection = block.getInput(inputName)?.connection;
-        if (inputConnection?.shadowDom) {
-            // Convert shadow DOM to block instance in workspace
-            inputBlock = Blockly.Xml.domToBlock(inputConnection.shadowDom, block.workspace);
-        } else {
-            return defaultValue;
-        }
-    }
-
-    // If a runtime generator exists, call it
-    const runtimeGen = runtimeGenerators[inputBlock.type];
-    if (runtimeGen) {
-        const fn = runtimeGen(inputBlock);
-        if (typeof fn === 'function') {
-            let res = await fn();
-            // Unwrap nested functions (some generators return functions)
-            while (typeof res === 'function') res = await res();
-            return res === undefined ? defaultValue : res;
-        }
-        return runtimeGen(inputBlock);
-    }
-
-    // Otherwise fallback to valueToCode + tryEvalValueCode
-    try {
-        const codeValue = Blockly.JavaScript.valueToCode(inputBlock, '', Blockly.JavaScript.ORDER_ATOMIC);
-        const v = tryEvalValueCode(codeValue);
-        return v === undefined ? defaultValue : v;
-    } catch (e) {
-        console.error('[evalInputAsync] Failed:', e);
-        return defaultValue;
-    }
-}
-*/
 
 // ============================================================================
 // Runtime execution helpers
@@ -223,25 +192,6 @@ registerRuntimeGenerator('stop_block', block => async () => {
 });
 
 // Logging / text
-/*
-registerRuntimeGenerator('log_block', block => async () => {
-    // Evaluate the 'TEXT' input asynchronously
-    const value = await evalInputAsync(block, 'TEXT', '[log empty]');
-
-    // Keep original value for logging
-    console.log("[log_block]", value);
-
-    // Send to B4J — convert to string only here
-    await sendCommandToB4JAsync({ command: 'log', value: (value === undefined || value === null) ? '[log empty]' : String(value) });
-});
-// Make sure you have the JavaScript generator loaded
-javascriptGenerator.forBlock['log_block'] = function(block, generator) {
-  // Use 'VALUE' or 'TEXT' (whichever name you gave the input in the definition)
-  const value = generator.valueToCode(block, 'TEXT', Order.ATOMIC) || "''";
-  return `console.log(${value});\n`;
-};
-*/
-
 registerRuntimeGenerator('log_block', block => async () => {
     // 1. Get the connected block
     const inputBlock = block.getInputTargetBlock('TEXT');
@@ -317,6 +267,14 @@ registerRuntimeGenerator('delay', block => async () => {
     await sendCommandToB4JAsync({ command: 'delay', value: ms });
     return new Promise(resolve => setTimeout(resolve, ms));
 });
+
+Blockly.JavaScript['wait_ble_connected'] = function(block) {
+    const timeout = Blockly.JavaScript.valueToCode(block, 'TIMEOUT', Blockly.JavaScript.ORDER_NONE) || '5000';
+
+    const code = `await waitBLEConnectedAsync(${timeout})`;
+    return [code, Blockly.JavaScript.ORDER_AWAIT];
+};
+
 
 // Logic primitives
 registerRuntimeGenerator('logic_boolean', block => async () => {
@@ -462,26 +420,92 @@ registerRuntimeGenerator('while_loop', block => async () => {
     }
 });
 
-// Variables
-registerRuntimeGenerator('variables_set', block => {
-    const variable = Blockly.Variables.getVariable(block.workspace, block.getFieldValue('VAR'));
-    const varName = variable ? variable.name : block.getFieldValue('VAR');
-    return async function() {
-        const val = await evalInputAsync(block, 'VALUE');
-        window.workspaceVars = window.workspaceVars || {};
-        window.workspaceVars[varName] = val;
-        console.log(`Variable ${varName} set to`, val);
-    };
+registerRuntimeGenerator('for_to_step_loop', block => async () => {
+    const varId = block.getFieldValue('VAR');
+    const variable = block.workspace.getVariableById(varId);
+    const varName = variable ? variable.name : varId;
+
+    const fromVal = Number(await evalInputAsync(block, 'FROM', 0));
+    const toVal   = Number(await evalInputAsync(block, 'TO', 0));
+    let stepVal   = Number(await evalInputAsync(block, 'STEP', 1));
+
+    // Validate step
+    if (stepVal === 0) {
+        console.warn(`[for_to_step_loop] Step cannot be 0. Loop skipped.`);
+        if (window.sendCommandToB4JAsync) {
+            await sendCommandToB4JAsync({
+                command: 'loop_error',
+                message: `Loop variable "${varName}" step cannot be 0`
+            });
+        }
+        return;
+    }
+
+    console.log(`[for] ${varName} from ${fromVal} to ${toVal} step ${stepVal}`);
+
+    window.blocklyVars.runtime = window.blocklyVars.runtime || {};
+
+    // Determine loop condition based on step sign
+    const loopCondition = stepVal > 0
+        ? (i => i <= toVal)
+        : (i => i >= toVal);
+
+    for (let i = fromVal; loopCondition(i); i += stepVal) {
+        // Set runtime variable
+        window.blocklyVars.runtime[varName] = i;
+
+        console.log(`[for] ${varName} = ${i}`);
+
+        // Execute loop body
+        if (block.statementToExecute) await block.statementToExecute();
+
+        // Send loop variable to B4J
+        if (window.sendCommandToB4JAsync) {
+            await sendCommandToB4JAsync({
+                command: 'loop_variable',
+                name: varName,
+                value: i
+            });
+        }
+    }
 });
 
-registerRuntimeGenerator('variables_get', block => {
-    const variable = Blockly.Variables.getVariable(block.workspace, block.getFieldValue('VAR'));
-    const varName = variable ? variable.name : block.getFieldValue('VAR');
-    return async function() {
-        const val = (window.workspaceVars || {})[varName];
-        console.log(`Variable ${varName} retrieved:`, val);
-        return val;
-    };
+// Variables
+registerRuntimeGenerator('variables_get', block => async () => {
+    const varId = block.getFieldValue('VAR'); // ID from block
+    const variable = block.workspace.getVariableById(varId);
+    const varName = variable ? variable.name : varId;
+
+    return window.blocklyVars.runtime[varName];
+});
+
+registerRuntimeGenerator('variables_set', block => async () => {
+    const varId = block.getFieldValue('VAR'); // ID from block
+    const variable = block.workspace.getVariableById(varId);
+    const varName = variable ? variable.name : varId;
+
+    const value = await evalInputAsync(block, 'VALUE');
+    window.blocklyVars.runtime[varName] = value;
+});
+
+registerRuntimeGenerator('show_variable', block => async () => {
+    const varId = block.getFieldValue('VAR');
+    const variable = block.workspace.getVariableById(varId);
+    const varName = variable ? variable.name : varId;
+
+    // Read value from runtime store
+    const value = window.blocklyVars.runtime[varName];
+    const out = `${varName} = ${value === undefined ? '[undefined]' : value}`;
+
+    console.log('[show_variable]', out);
+
+    if (window.sendCommandToB4JAsync) {
+        await sendCommandToB4JAsync({
+            command: 'show_variable',
+            name: varName,
+            value: String(value)
+        });
+    }
 });
 
 // ============================================================================

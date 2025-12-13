@@ -26,7 +26,7 @@
 	<script src="https://unpkg.com/blockly@12.3.1/blockly.min.js"></script>
 
 	<!-- Load the JavaScript generator after Blockly -->
-	<script src="https://unpkg.com/blockly/javascript_compressed"></script>
+	<script src="https://unpkg.com/blockly@12.3.1/javascript_compressed"></script>
 
 	<style>
 	  html, body { height: 100%; margin: 0; }
@@ -40,8 +40,9 @@
 
 <!-- HTML control buttons (B4J will usually trigger these) -->
 <div id="buttons">
-  <button id="btnRun">Run</button>
-  <!-- B4J can call runWorkspaceBlocks() directly, see blockly_app.js -->
+	<button id="btnRun">Run</button>
+	<!-- B4J can call runWorkspaceBlocks() directly, see blockly_app.js -->
+	<button id="btnClear">Clear</button>
 </div>
 
 <!-- Blockly will be injected here -->
@@ -83,7 +84,7 @@ const toolboxJson = {
         { "kind": "block", "type": "delay" },
         { "kind": "block", "type": "dht11_sensor" },
         { "kind": "block", "type": "door_open" },
-        { "kind": "block", "type": "door_close" }
+        { "kind": "block", "type": "door_close" },
       ]
     },
 
@@ -117,7 +118,8 @@ const toolboxJson = {
             }
           }
         },
-        { "kind": "block", "type": "while_loop" }
+        { "kind": "block", "type": "while_loop" },
+		{ "kind": "block", "type": "for_to_step_loop" }
       ]
     },
 
@@ -216,6 +218,10 @@ const toolboxJson = {
 		{
 		  "kind": "block",
 		  "type": "variables_set"
+		},
+		{
+			"kind": "block",
+			"type": "show_variable"
 		}
 	  ]
 	}

@@ -72,6 +72,41 @@ Blockly.defineBlocksWithJsonArray([
     "nextStatement": null,
     "colour": 120
   },
+	{
+	  "type": "for_to_step_loop",
+	  "message0": "for %1 from %2 to %3 step %4 do %5",
+	  "args0": [
+		{
+		  "type": "field_variable",
+		  "name": "VAR",
+		  "variable": "i"
+		},
+		{
+		  "type": "input_value",
+		  "name": "FROM",
+		  "check": "Number"
+		},
+		{
+		  "type": "input_value",
+		  "name": "TO",
+		  "check": "Number"
+		},
+		{
+		  "type": "input_value",
+		  "name": "STEP",
+		  "check": "Number"
+		},
+		{
+		  "type": "input_statement",
+		  "name": "DO"
+		}
+	  ],
+	  "previousStatement": null,
+	  "nextStatement": null,
+	  "colour": 120,
+	  "tooltip": "For loop with runtime execution",
+	  "helpUrl": ""
+	},
 
   // Logic primitives (UI only)
   /*
