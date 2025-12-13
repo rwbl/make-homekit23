@@ -78,8 +78,9 @@ Private Sub Class_Globals
 	#End If
 	Private IsConnected As Boolean = False
 	
-	' BLE Commands
+	' BLE & Blockly Commands
 	Private Commands As BLECommands
+	Private Blockly As BlocklyCommands
 	
 	' File
 	Private WorkspaceFile As String = WORKSPACE_DEFAULT_FILE
@@ -94,6 +95,7 @@ End Sub
 Private Sub B4XPage_Created (Root1 As B4XView)
 	' Load the commands
 	Commands.Initialize
+	Blockly.Initialize
 
 	Root = Root1
 	' Load layout case sensitive
@@ -160,6 +162,7 @@ Private Sub B4XPage_Appear
 	end if
 	#End If
 End Sub
+#End Region
 
 ' These subs are triggered by the BLEMgr pybridge events
 #if B4J
@@ -295,7 +298,7 @@ Public Sub HandleBLEConnect(state As Boolean)
 		TileEventViewer.Insert($"[HandleBLEConnect] ${"Disconnected"} from ${BLEConstants.BLE_DEVICE_NAME}"$, HMITileUtils.EVENT_LEVEL_ALARM)
 	End If
 	IsConnected = state
-	BlocklySetVariable("BLE_CONNECTED", IsConnected)
+	Blockly.SetVariable(WebViewBlockly, "BLE_CONNECTED", IsConnected)
 End Sub
 
 ' HandleBLENotification
@@ -321,7 +324,7 @@ End Sub
 Private Sub WebViewBlockly_PageFinished (Url As String)
 	TileEventViewer.Insert($"[WebViewBlockly_PageFinished] url=${Url}"$, HMITileUtils.EVENT_LEVEL_INFO)
 	' Create the webview engine object
-	Dim engine As JavaObject = GetEngine(WebViewBlockly)
+	Dim engine As JavaObject = Blockly.GetEngine(WebViewBlockly)
 
 	' Set javascript enabled for the webengine
 	engine.RunMethod("setJavaScriptEnabled", Array(True))
@@ -351,9 +354,15 @@ Sub WebViewBlockly_Event(MethodName As String, Args() As Object)
 				Select command
 					Case "start"
 						TileEventViewer.Clear
-						BlocklySetVariable("BLE_CONNECTED", False)
+						Blockly.SetVariable(WebViewBlockly, "BLE_CONNECTED", False)
 					Case "stop"
-						BlocklySetVariable("BLE_CONNECTED", False)
+						Blockly.SetVariable(WebViewBlockly, "BLE_CONNECTED", False)
+					Case "load"
+						ButtonLoad_Click
+					Case "save"
+						ButtonSave_Click
+					Case "createvar"
+						ButtonCreateVariable_Click
 					Case "getvariable"
 						Dim varName As String = jRoot.Get("variable")
 						Dim value As Object = jRoot.Get("value")
@@ -446,9 +455,7 @@ End Sub
 ' Execute button - user triggers to save/load workspace and sending command to hardware
 ' ------------------------------
 Private Sub ButtonRun_Click
-    Dim engine As JavaObject = GetEngine(WebViewBlockly)
-    ' Call the JS function to run all blocks
-	engine.RunMethod("executeScript", Array("runWorkspaceBlocks()"))
+	Blockly.RunWorkspaceBlocks(WebViewBlockly)
 End Sub
 
 Private Sub ButtonSave_Click
@@ -466,9 +473,8 @@ Private Sub ButtonSave_Click
 	Wait For (Dialog.ShowTemplate(input, "OK", "", "CANCEL")) Complete (Result As Int)
 	If Result = xui.DialogResponse_Positive Then
 		WorkspaceFile = input.Text
-		Dim engine As JavaObject = GetEngine(WebViewBlockly)
 		' Call JS function and get Base64 workspace
-		Dim base64 As String = engine.RunMethod("executeScript", Array("saveWorkspace()"))
+		Dim base64 As String = Blockly.Save(WebViewBlockly)
 		If base64 <> Null And base64.Length > 0 Then
 			Try
 				Dim xml As String = base64	'DecodeBase64(base64)
@@ -495,14 +501,16 @@ Private Sub ButtonLoad_Click
 	input.Text = WorkspaceFile	'WORKSPACE_DEFAULT_FILE
 	Wait For (Dialog.ShowTemplate(input, "OK", "", "CANCEL")) Complete (Result As Int)
 	If Result = xui.DialogResponse_Positive Then
-		Dim engine As JavaObject = GetEngine(WebViewBlockly)
 		If File.Exists(folder, input.Text) Then
+			WorkspaceFile = input.text
 			Try
-				Dim xml As String = File.ReadString(folder, input.Text)
-				If xml.Length > 0 Then
-					Dim base64 As String = xml	' EncodeBase64(xml)
-					engine.RunMethod("executeScript", Array($"loadWorkspace("${base64}")"$))
-					TileEventViewer.Insert($"[ButtonLoad] Workspace loaded successfully from ${input.Text}"$, HMITileUtils.EVENT_LEVEL_INFO)
+				Dim base64 As String = File.ReadString(folder, input.Text)
+				If base64.Length > 0 Then
+					If Blockly.Load(WebViewBlockly, base64) Then
+						TileEventViewer.Insert($"[ButtonLoad] Workspace loaded successfully from ${input.Text}"$, HMITileUtils.EVENT_LEVEL_INFO)
+					Else
+						TileEventViewer.Insert($"[ButtonLoad] Workspace not loaded from ${input.Text}, ${Blockly.LastMessage}"$, HMITileUtils.EVENT_LEVEL_ALARM)
+					End If
 				End If
 			Catch
 				TileEventViewer.Insert($"[ButtonLoad] Workspace not loaded ${LastException}"$, HMITileUtils.EVENT_LEVEL_ALARM)
@@ -518,10 +526,10 @@ Private Sub ButtonCreateVariable_Click
 	input.Text = WORKSPACE_DEFAULT_VAR
 	Wait For (Dialog.ShowTemplate(input, "OK", "", "CANCEL")) Complete (Result As Int)
 	If Result = xui.DialogResponse_Positive Then
-		Dim engine As JavaObject = GetEngine(WebViewBlockly)
-		If input.text <> "" Then
-			engine.RunMethod("executeScript", Array($"createVariable("${input.text}")"$))
+		If Blockly.CreateVariable(WebViewBlockly, input.Text) Then
 			TileEventViewer.Insert($"[ButtonCreateVariable] Created=${input.Text}"$, HMITileUtils.EVENT_LEVEL_INFO)
+		Else
+			TileEventViewer.Insert($"[ButtonCreateVariable] Not created=${input.Text}, ${Blockly.LastMessage}"$, HMITileUtils.EVENT_LEVEL_ALARM)			
 		End If
 	End If
 End Sub
@@ -530,104 +538,30 @@ Private Sub ButtonClearWorkspace_Click
 	Dim sf As Object = xui.Msgbox2Async("Do you really want to clear the workspace?", "Clear", "Yes", "", "No", Null)
 	Wait For (sf) Msgbox_Result (Result As Int)
 	If Result = xui.DialogResponse_Positive Then
-		If BlocklyRunScript($"clearWorkspace()"$) Then
+		If Blockly.Clear(WebViewBlockly) Then
 			TileEventViewer.Insert($"[ButtonClearWorkspace] Cleared"$, HMITileUtils.EVENT_LEVEL_INFO)			
+		Else
+			TileEventViewer.Insert($"[ButtonClearWorkspace] Not cleared, ${Blockly.LastMessage}"$, HMITileUtils.EVENT_LEVEL_ALARM)
 		End If
 	End If
 End Sub
 
 Private Sub ButtonTest_Click
-	' Create the webview engine object
-	Dim engine As JavaObject = GetEngine(WebViewBlockly)
+	Blockly.SetVariable(WebViewBlockly, "BLE_CONNECTED", True)
+	Log($"[ButtonTest_Click] BLE_CONNECTED=${Blockly.LastMessage}"$)
 
-	BlocklySetVariable("BLE_CONNECTED", True)
+	Blockly.SetVariable(WebViewBlockly, "COUNTER", 1958)
+	Log($"[ButtonTest_Click] COUNTER=${Blockly.LastMessage}"$)
+
+	Log($"[ButtonTest_Click] BLE_CONNECTED=${Blockly.GetVariable(WebViewBlockly, "BLE_CONNECTED")}"$)
 	
 	Dim tempValue As Float	= 22.3
 	Dim humValue As Float	= 69
-	engine.RunMethod("executeScript", Array($"setDeviceDHT11(${tempValue},${humValue})"$))
+	Blockly.RunScript(WebViewBlockly, $"setDeviceDHT11(${tempValue},${humValue})"$)
 
 	Return
-
-	BlocklySetVariable("connected", 1)
-	
-
-
-	engine.RunMethod("executeScript", Array("getVariable('x')"))
-
-	Try
-		engine.RunMethod("executeScript", Array("setVariable('connected', 0)"))
-'		engine.RunMethod("executeScript", Array("setVariable('connected', 1958)"))
-'		engine.RunMethod("executeScript", Array("setVariable('x', 1958)"))
-'		engine.RunMethod("executeScript", Array("setVariable('abc', 123)"))
-	Catch
-		Log($"[ExecuteScript]]E]${LastException}"$)
-	End Try
-
-	engine.RunMethod("executeScript", Array("setDeviceState('yellow_led', 'ON')"))
-
-	Dim tempValue As Float	= 22.3
-	Dim humValue As Float	= 69
-	engine.RunMethod("executeScript", Array($"setDeviceDHT11(${tempValue},${humValue})"$))
 End Sub
 
-' ------------------------------
-' Helper to access the WebEngine via JavaObject
-' ------------------------------
-Public Sub GetEngine(wv As WebView) As JavaObject
-	Dim jo As JavaObject = wv
-	Return jo.RunMethod("getEngine", Null)
-End Sub
-
-' BlocklyRunScript
-' Execute a Javascript (see blockly_apps js).
-' Parameters:
-'	script String
-' Example:
-'	BlocklyRunScript("clearWorkspace()")
-Public Sub BlocklyRunScript(script As String) As Boolean
-	Dim result As Boolean = False
-	Dim engine As JavaObject = GetEngine(WebViewBlockly)
-	
-	If script.Length == 0 Then Return False
-	Try
-		engine.RunMethod("executeScript", Array(script))
-		TileEventViewer.Insert($"[BlocklyRunScript] ${script}"$, HMITileUtils.EVENT_LEVEL_INFO)
-		result = True
-	Catch
-		TileEventViewer.Insert($"[BlocklyRunScript] ${script}: ${LastException}"$, HMITileUtils.EVENT_LEVEL_ALARM)
-		result = False
-	End Try
-	Return result
-End Sub
-
-Public Sub BlocklySetVariable(variable As String, value As Object)
-	Dim jsValue As String
-
-	jsValue = "null"
-
-	If value Is Boolean Then
-		jsValue = IIf(value, "true", "false")
-	End If
-	
-	If value Is Int Or value Is Long Or value Is Double Then
-			jsValue = value
-	End If
-
-	If value Is String Then
-		jsValue = $""${value}""$  ' wrap string in quotes
-	End If
-
-	Dim js As String = $"setVariable("${variable}", ${jsValue})"$
-	Log($"[BlocklySetVariable] ${js}"$)
-
-	Dim engine As JavaObject = GetEngine(WebViewBlockly)
-	Try
-		engine.RunMethod("executeScript", Array(js))
-	Catch
-		Log($"[BlocklySetVariable]E] ${LastException}"$)
-	End Try
-End Sub
-#end region
 
 Public Sub IsJson(text As String) As Boolean
 	Dim result As Boolean

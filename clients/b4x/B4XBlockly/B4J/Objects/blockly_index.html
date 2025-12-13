@@ -42,7 +42,10 @@
 <div id="buttons">
 	<button id="btnRun">Run</button>
 	<!-- B4J can call runWorkspaceBlocks() directly, see blockly_app.js -->
+	<button id="btnLoad">Load</button>
+	<button id="btnSave">Save</button>
 	<button id="btnClear">Clear</button>
+	<button id="btnCreateVar">Create Var</button>
 </div>
 
 <!-- Blockly will be injected here -->
@@ -53,6 +56,7 @@
 -->
 
 <!-- Define the getElementById interception before loading Blockly scripts -->
+<!-- DEBUGGING
 <script>
 	const originalGetElementById = document.getElementById;
 	document.getElementById = function(id) {
@@ -62,7 +66,7 @@
 		return originalGetElementById.apply(this, arguments);
 	};
 </script>
-
+-->
 
 <script>
 /*

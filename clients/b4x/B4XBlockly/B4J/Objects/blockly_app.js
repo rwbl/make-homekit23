@@ -248,11 +248,35 @@ function getVariable(name, defaultValue = undefined) {
         return defaultValue;
     }
 
-    return window.blocklyVars.runtime[name];
+	value = window.blocklyVars.runtime[name];
+	console.log(`[getVariable][I] ${name} = ${value}`);
+
+    return value;
 }
 
 function hasVariable(name) {
     return !!(name && window.blocklyVars.runtime.hasOwnProperty(name));
+}
+
+function refreshShowVariableBlocks() {
+    if (!window.workspace || !window.blocklyVars?.runtime) return;
+
+    const blocks = window.workspace.getAllBlocks(false);
+
+    blocks.forEach(block => {
+        if (block.type !== 'show_variable') return;
+
+        const varField = block.getField('VAR');
+        const valueField = block.getField('VALUE');
+
+        if (!varField || !valueField) return;
+
+        const varName = varField.getVariable()?.name;
+        if (!varName) return;
+
+        const value = window.blocklyVars.runtime[varName];
+        valueField.setValue(String(value));
+    });
 }
 
 // ======================================================================
@@ -265,7 +289,7 @@ window.onload = function () {
 		toolbox: toolboxJson,
 		scrollbars: true,
 		trashcan: true,
-		renderer: 'zelos', // or 'geras' for old style
+		renderer: 'geras', 		// new style 'zelos', old style 'geras'
 		maxBlocks: Infinity,
 		sounds: false,
 		move: {
@@ -335,6 +359,43 @@ window.onload = function () {
 
 		btnClear.onclick = function() {
 			window.clearWorkspace();
+		};
+	})();
+
+	// Load workspace button (if exists)
+	(function() {
+		const btnLoad = document.getElementById("btnLoad");
+		if (!btnLoad) return;
+
+		btnLoad.onclick = function() {
+			if (window.sendCommandToB4JAsync) {
+				window.sendCommandToB4JAsync({ command: 'load' });
+			}
+		};
+	})();
+
+	// Save workspace button (if exists)
+	(function() {
+		const btnSave = document.getElementById("btnSave");
+		if (!btnSave) return;
+
+		btnSave.onclick = function() {
+			if (window.sendCommandToB4JAsync) {
+				window.sendCommandToB4JAsync({ command: 'save' });
+			}
+		};
+	})();
+
+	// Create variable (if exists)
+	(function() {
+		const btnCreateVar = document.getElementById("btnCreateVar");
+		if (!btnCreateVar) return;
+
+		btnCreateVar.onclick = function() {
+			// createVariable("x", 1958);
+			if (window.sendCommandToB4JAsync) {
+				window.sendCommandToB4JAsync({ command: 'createvar' });
+			}
 		};
 	})();
 

@@ -12,28 +12,36 @@ Blockly.defineBlocksWithJsonArray([
 		"message0": "Connect",
 		"previousStatement": null,
 		"nextStatement": null,
-		"colour": 30
+		"colour": 30,
+		"tooltip": "Connect to BLE device",
+		"helpUrl": ""
 	},
 	{
 		"type": "disconnect",
 		"message0": "Disconnect",
 		"previousStatement": null,
 		"nextStatement": null,
-		"colour": 30
+		"colour": 30,
+		"tooltip": "Disconnect from the BLE device",
+		"helpUrl": ""
 	},
 	{
 		"type": "yellow_led_on",
 		"message0": "Yellow LED on",
 		"previousStatement": null,
 		"nextStatement": null,
-		"colour": 60
+		"colour": 60,
+		"tooltip": "Turn Yellow LED ON",
+		"helpUrl": ""
 	},
 	{
 		"type": "yellow_led_off",
 		"message0": "Yellow LED off",
 		"previousStatement": null,
 		"nextStatement": null,
-		"colour": 60
+		"colour": 60,
+		"tooltip": "Turn Yellow LED OFF",
+		"helpUrl": ""
 	},
 	{
 		"type": "yellow_led",
@@ -50,21 +58,27 @@ Blockly.defineBlocksWithJsonArray([
 		],
 		"previousStatement": null,
 		"nextStatement": null,
-		"colour": 60
+		"colour": 60,
+		"tooltip": "Show state Yellow LED ON or OFF",
+		"helpUrl": ""
 	},
 	{
 		"type": "door_open",
 		"message0": "Open Door",
 		"previousStatement": null,
 		"nextStatement": null,
-		"colour": 160
+		"colour": 160,
+		"tooltip": "Door open",
+		"helpUrl": ""
 	},
 	{
 		"type": "door_close",
 		"message0": "Close Door",
 		"previousStatement": null,
 		"nextStatement": null,
-		"colour": 160
+		"colour": 160,
+		"tooltip": "Door close",
+		"helpUrl": ""
 	},
 	{
 		"type": "delay",
@@ -74,20 +88,25 @@ Blockly.defineBlocksWithJsonArray([
 		],
 		"previousStatement": null,
 		"nextStatement": null,
-		"colour": 120
+		"colour": 120,
+		"tooltip": "Set delay in ms.",
+		"helpUrl": ""
 	},
-	
+
 	{
 		"type": "dht11_sensor",
-		"message0": "DHT11 Sensor Temp %1 °C Hum %2 %",
+		"message0": "DHT11 Temp %1 °C Hum %2 %",
 		"args0": [
-		  { "type": "field_number", "name": "TEMP", "value": 0 },
-		  { "type": "field_number", "name": "HUM", "value": 0 }
+			{ "type": "field_label", "name": "TEMP", "text": "0" },
+			{ "type": "field_label", "name": "HUM", "text": "0" }
 		],
 		"previousStatement": null,
 		"nextStatement": null,
-		"colour": 60
+		"colour": 60,
+		"tooltip": "Show DHT11 sensor data",
+		"helpUrl": ""
 	},
+
 	
 	{
 		"type": "show_variable",
@@ -106,7 +125,9 @@ Blockly.defineBlocksWithJsonArray([
 		],
 		"previousStatement": null,
 		"nextStatement": null,
-		"colour": 230
+		"colour": 230,
+		"tooltip": "Show value of a variable",
+		"helpUrl": ""
 	}
 
 ]);

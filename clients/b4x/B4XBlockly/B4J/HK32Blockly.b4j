@@ -19,13 +19,14 @@ Module1=|relative|..\B4XMainPage
 Module2=|relative|..\..\Common\BLE\BLECommands
 Module3=|relative|..\..\Common\BLE\BLEConstants
 Module4=|relative|..\..\Common\BLE\BLEManager
-Module5=|relative|..\..\Common\Utils\Convert
-Module6=|relative|..\..\Common\HMI\Mods\HMITileEventViewer
-Module7=|relative|..\..\Common\HMI\Mods\HMITileList
-Module8=|relative|..\..\Common\HMI\Mods\HMITileUtils
+Module5=|relative|..\BlocklyCommands
+Module6=|relative|..\..\Common\Utils\Convert
+Module7=|relative|..\..\Common\HMI\Mods\HMITileEventViewer
+Module8=|relative|..\..\Common\HMI\Mods\HMITileList
+Module9=|relative|..\..\Common\HMI\Mods\HMITileUtils
 NumberOfFiles=3
 NumberOfLibraries=8
-NumberOfModules=8
+NumberOfModules=9
 Version=10.3
 @EndOfDesignText@
 #Region Project Attributes 
