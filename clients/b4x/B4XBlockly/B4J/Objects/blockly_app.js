@@ -259,6 +259,7 @@ function hasVariable(name) {
 // ONLOAD: Inject Blockly
 // ======================================================================
 window.onload = function () {
+	
     // 1. Inject workspace with JSON toolbox (replace toolboxJson with your JSON)
     window.workspace = Blockly.inject('blocklyDiv', {
 		toolbox: toolboxJson,
@@ -277,6 +278,8 @@ window.onload = function () {
 
     // 2. Initialize JS generator
     Blockly.JavaScript.init(window.workspace);
+
+	Blockly.common.debug = true;
 
 	// 3. Variables Pre-Defined v12
     // This adds it to the internal Variable Map so it appears in the toolbox

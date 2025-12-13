@@ -154,14 +154,14 @@ async function runWorkspaceBlocksAsync() {
         return;
     }
     const topBlocks = ws.getTopBlocks(true);
-    console.log('Top blocks count:', topBlocks.length);
+    // console.log('Top blocks count:', topBlocks.length);
 
     const queue = [];
     for (const block of topBlocks) {
         buildSequenceFrom(block, queue);
     }
 
-    console.log('runBlockQueue length:', queue.length);
+    // console.log('runBlockQueue length:', queue.length);
     await runBlockQueue(queue);
 }
 
@@ -488,22 +488,28 @@ registerRuntimeGenerator('variables_set', block => async () => {
     window.blocklyVars.runtime[varName] = value;
 });
 
+// Register the 'show_variable' block generator
 registerRuntimeGenerator('show_variable', block => async () => {
-    const varId = block.getFieldValue('VAR');
-    const variable = block.workspace.getVariableById(varId);
-    const varName = variable ? variable.name : varId;
+    const varId = block.getFieldValue('VAR');  // Get the selected variable ID
+    const variable = block.workspace.getVariableById(varId);  // Get the variable object by ID
+    const varName = variable ? variable.name : varId;  // Get the variable name
 
-    // Read value from runtime store
-    const value = window.blocklyVars.runtime[varName];
-    const out = `${varName} = ${value === undefined ? '[undefined]' : value}`;
+    // Retrieve the value of the selected variable
+    const value = getVariable(varName, '[undefined]');  // Default to '[undefined]' if variable not found
 
+    // Log the output (for debugging)
+    const out = `${varName} = value ${value}`;
     console.log('[show_variable]', out);
 
+	// Set the value of the 'VALUE' field in the block (this makes it display the value)
+    block.setFieldValue(String(value), "VALUE");
+
+    // Optional: Send this information to B4J (or other destinations)
     if (window.sendCommandToB4JAsync) {
         await sendCommandToB4JAsync({
             command: 'show_variable',
             name: varName,
-            value: String(value)
+            value: String(value)  // Ensure it's a string
         });
     }
 });

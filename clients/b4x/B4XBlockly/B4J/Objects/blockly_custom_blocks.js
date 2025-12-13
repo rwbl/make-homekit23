@@ -91,19 +91,22 @@ Blockly.defineBlocksWithJsonArray([
 	
 	{
 		"type": "show_variable",
-		"message0": "show variable %1",
+		"message0": "show variable %1 value %2",
 		"args0": [
 			{
-			  "type": "field_variable",
-			  "name": "VAR",
-			  "variable": "BLE_CONNECTED"
+				"type": "field_variable",
+				"name": "VAR",
+				"variable": "BLE_CONNECTED"
+			},
+{
+				"type": "field_label",   
+				"name": "VALUE",
+				"variable": ""  
 			}
 		],
 		"previousStatement": null,
 		"nextStatement": null,
-		"colour": 210,
-		"tooltip": "Show the current value of a variable",
-		"helpUrl": ""
+		"colour": 230
 	}
 
 ]);

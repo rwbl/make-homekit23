@@ -51,6 +51,19 @@
 <!-- 
 	Toolbox: categories / blocks shown in the sidebar 
 -->
+
+<!-- Define the getElementById interception before loading Blockly scripts -->
+<script>
+	const originalGetElementById = document.getElementById;
+	document.getElementById = function(id) {
+		if (!id) {
+			console.error('getElementById called with an empty or invalid ID');
+		}
+		return originalGetElementById.apply(this, arguments);
+	};
+</script>
+
+
 <script>
 /*
 	Notes:
@@ -148,42 +161,119 @@ const toolboxJson = {
           "type": "math_number",
 		  "fields": { "NUM": 0 }
         },
-        {
-          "kind": "block",
-          "type": "math_arithmetic",
-          "fields": {
-            "OP": "ADD"
-          }
-        },
-        {
-          "kind": "block",
-          "type": "math_arithmetic",
-          "fields": {
-            "OP": "MINUS"
-          }
-        },
-        {
-          "kind": "block",
-          "type": "math_arithmetic",
-          "fields": {
-            "OP": "MULTIPLY"
-          }
-        },
-        {
-          "kind": "block",
-          "type": "math_arithmetic",
-          "fields": {
-            "OP": "DIVIDE"
-          }
-        },
-        {
-          "kind": "block",
-          "type": "math_random_int",
-          "fields": {
-            "FROM": "0",
-            "TO": "10"
-          }
-        },
+		{
+		  "kind": "block",
+		  "type": "math_arithmetic",
+		  "fields": { 
+			"OP": "ADD" 
+		  },
+		  "inputs": {
+			"A": {
+			  "shadow": {
+				"type": "math_number",
+				"fields": { "NUM": 1 }
+			  }
+			},
+			"B": {
+			  "shadow": {
+				"type": "math_number",
+				"fields": { "NUM": 1 }
+			  }
+			}
+		  }
+		},
+		{
+		  "kind": "block",
+		  "type": "math_arithmetic",
+		  "fields": { 
+			"OP": "MINUS" 
+		  },
+		  "inputs": {
+			"A": {
+			  "shadow": {
+				"type": "math_number",
+				"fields": { "NUM": 1 }
+			  }
+			},
+			"B": {
+			  "shadow": {
+				"type": "math_number",
+				"fields": { "NUM": 1 }
+			  }
+			}
+		  }
+		},
+		{
+		  "kind": "block",
+		  "type": "math_arithmetic",
+		  "fields": { 
+			"OP": "MULTIPLY" 
+		  },
+		  "inputs": {
+			"A": {
+			  "shadow": {
+				"type": "math_number",
+				"fields": { "NUM": 1 }
+			  }
+			},
+			"B": {
+			  "shadow": {
+				"type": "math_number",
+				"fields": { "NUM": 1 }
+			  }
+			}
+		  }
+		},
+		{
+		  "kind": "block",
+		  "type": "math_arithmetic",
+		  "fields": { 
+			"OP": "DIVIDE" 
+		  },
+		  "inputs": {
+			"A": {
+			  "shadow": {
+				"type": "math_number",
+				"fields": { "NUM": 1 }
+			  }
+			},
+			"B": {
+			  "shadow": {
+				"type": "math_number",
+				"fields": { "NUM": 1 }
+			  }
+			}
+		  }
+		},
+		{
+		  "kind": "block",
+		  "type": "math_arithmetic",
+		  "fields": { 
+			"OP": "POWER" 
+		  },
+		  "inputs": {
+			"A": {
+			  "shadow": {
+				"type": "math_number",
+				"fields": { "NUM": 1 }
+			  }
+			},
+			"B": {
+			  "shadow": {
+				"type": "math_number",
+				"fields": { "NUM": 1 }
+			  }
+			}
+		  }
+		},
+		{
+		  "kind": "block",
+		  "type": "math_random_int",
+		  "inputs": {
+			"FROM": { "shadow": { "type": "math_number", "fields": { "NUM": 1 } } },
+			"TO": { "shadow": { "type": "math_number", "fields": { "NUM": 10 } } }
+		  }
+		},
         {
           "kind": "block",
           "type": "math_random_float"
@@ -195,14 +285,24 @@ const toolboxJson = {
             "OP": "ROUND"
           }
         },
-        {
-          "kind": "block",
-          "type": "math_modulo",
-          "fields": {
-            "DIVIDEND": "0",
-            "DIVISOR": "1"
-          }
-        }
+		{
+		  "kind": "block",
+		  "type": "math_modulo",
+		  "inputs": {
+			"DIVIDEND": {
+			  "shadow": {
+				"type": "math_number",
+				"fields": { "NUM": 0 }
+			  }
+			},
+			"DIVISOR": {
+			  "shadow": {
+				"type": "math_number",
+				"fields": { "NUM": 1 }
+			  }
+			}
+		  }
+		}
       ]
     },
 
