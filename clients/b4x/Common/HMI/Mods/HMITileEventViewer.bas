@@ -32,8 +32,10 @@ Version=10.3
 #DesignerProperty: Key: TitleText, 		DisplayName: Title, FieldType: String, DefaultValue: Event Viewer
 #DesignerProperty: Key: TimeStamp, 		DisplayName: Timestamp, FieldType: Boolean, DefaultValue: True, Description: Add timestamp as event message prefix. 
 #DesignerProperty: Key: MaxItems, 		DisplayName: Max Items, FieldType: Int, DefaultValue: 50, Description: Maximum number of event messages.
+#DesignerProperty: Key: ShowTitle, 		DisplayName: Show Title, FieldType: Boolean, DefaultValue: True, Description: Show title text.
 #DesignerProperty: Key: ShowTrash, 		DisplayName: Show Trash Icon, FieldType: Boolean, DefaultValue: True, Description: Show trash icon at bottom right.
 #DesignerProperty: Key: CompactMode,	DisplayName: Compact Mode, FieldType: Boolean, DefaultValue: False, Description: Show items compact mode.
+#DesignerProperty: Key: Logging, 		DisplayName: Logging, FieldType: Boolean, DefaultValue: False, Description: Log item to the IDE.
 
 ' Events
 #Event: ItemClick (Index As Int, Value As Object)
@@ -56,14 +58,16 @@ Sub Class_Globals
 	Private xui As XUI
 	Private PaneEventViewer As B4XView
 	Private LabelTitle As B4XView
-	Private ClvEvents As CustomListView
+	Public ClvEvents As CustomListView		' Can be accesses from object
 	Private LabelTrash As B4XView
 	
 	' Properties
 	Private mTimeStamp As Boolean
 	Private mMaxEvents As Int
+	Private mShowTitle As Boolean
 	Private mShowTrash As Boolean
 	Private mCompactMode As Boolean
+	Private mLogging As Boolean
 End Sub
 
 Public Sub Initialize (Callback As Object, EventName As String)
@@ -91,8 +95,10 @@ Private Sub AfterLoadLayout(Props As Map)
 	LabelTitle.Text = Props.Get("TitleText")
 	mTimeStamp		= Props.Get("TimeStamp")
 	mMaxEvents		= Props.Get("MaxItems")
+	mShowTitle		= Props.Get("ShowTitle")
 	mShowTrash		= Props.Get("ShowTrash")
 	mCompactMode	= Props.Get("CompactMode")
+	mLogging		= Props.Get("Logging")
 
 	' UI settings
 	' For an ISA-101–compliant HMI, the clear events icon is a non-process, non-critical UI action, 
@@ -117,12 +123,24 @@ Private Sub Base_Resize(Width As Double, Height As Double)
 	End If
 
 	PaneEventViewer.SetLayoutAnimated(0, pad, pad, Width - pad * 2, Height - pad * 2)
-	LabelTitle.SetLayoutAnimated(0, 0, 0, PaneEventViewer.Width, HMITileUtils.EVENT_TITLE_HEIGHT)
+
+	If mShowTitle Then
+		LabelTitle.SetLayoutAnimated(0, 0, 0, PaneEventViewer.Width, HMITileUtils.EVENT_TITLE_HEIGHT)		
+	End If
+
 	' Resize the base panel with CLV.GetBase.SetLayoutAnimated.
 	l = pad
-	t = HMITileUtils.EVENT_TITLE_HEIGHT + pad
+	t = pad
+	If mShowTitle Then
+		t = HMITileUtils.EVENT_TITLE_HEIGHT + pad		
+	End If
 	w = PaneEventViewer.Width - pad * 2
-	h = PaneEventViewer.Height - LabelTitle.Height - pad
+	h = PaneEventViewer.Height - pad
+
+	If mShowTitle Then
+		h = h - LabelTitle.Height
+	End If
+
 	If mShowTrash Then
 		h = h - LabelTrash.Height
 	End If
@@ -209,9 +227,10 @@ End Sub
 ' Returns:
 '	n/a
 Public Sub Insert(item As String, level As Int)
-	ClvEvents.InsertAt(0, _
-					ClvEventsCreateItem(item, level), _
-			        item)
+	If mTimeStamp Then
+		item = $"${FormatTimestamp(DateTime.Now)} - ${item}"$
+	End If
+	ClvEvents.InsertAt(0, ClvEventsCreateItem(item, level), item)
 	If ClvEvents.Size > mMaxEvents Then
 		ClvEvents.RemoveAt(ClvEvents.Size - 1)
 	End If
@@ -226,8 +245,10 @@ End Sub
 ' Returns:
 '	n/a
 Public Sub Add(item As String, level As Int)
-	ClvEvents.Add(ClvEventsCreateItem(item, level), _
-			   item)
+	If mTimeStamp Then
+		item = $"${FormatTimestamp(DateTime.Now)} - ${item}"$
+	End If
+	ClvEvents.Add(ClvEventsCreateItem(item, level), item)
 	If ClvEvents.Size > mMaxEvents Then
 		ClvEvents.RemoveAt(0)
 	End If
@@ -246,7 +267,7 @@ End Sub
 '	item String - Item to create.
 '	level Int - Event level
 ' Returns:
-'	Pane
+'	Pane with a single Label (B4XView)
 #if B4J
 Private Sub ClvEventsCreateItem(item As String, level As Int) As Pane
 #End If
@@ -299,13 +320,15 @@ Private Sub ClvEventsCreateItem(item As String, level As Int) As Panel
 
 	Dim lblitem As B4XView = XUIViewsUtils.CreateLabel
 	Dim lblitemtextsize As Float = IIf(mCompactMode, HMITileUtils.EVENT_COMPACT_MESSAGE_TEXT_SIZE, HMITileUtils.EVENT_NORMAL_MESSAGE_TEXT_SIZE)
+	' Set font normal or bold
 	lblitem.Font = xui.CreateDefaultFont(lblitemtextsize)
-	If mTimeStamp Then
-		item = $"${FormatTimestamp(DateTime.Now)} - ${item}"$
-	End If
+	'lblitem.Font = xui.CreateDefaultBoldFont(lblitemtextsize)
 	lblitem.Text = item
 	lblitem.SetTextAlignment("CENTER", "LEFT")
 	lblitem.TextColor = txtColor
+	If mLogging Then
+		Log(item)
+	End If
 
 	#if B4A
 	l = lblicontextsize + (rowpadding * 4)	
@@ -317,6 +340,7 @@ Private Sub ClvEventsCreateItem(item As String, level As Int) As Panel
 	w = pnl.Width - l
 	h = pnl.Height
 	pnl.AddView(lblitem, l, t, w, h)
+
 	Return pnl
 End Sub
 
@@ -336,8 +360,8 @@ End Sub
 '	index Int - List item index
 '	value String - Item content
 Private Sub ClvEvents_ItemClick (index As Int, value As Object)
-	If SubExists(mCallBack, mEventName & "_Click") Then
-		CallSub3(mCallBack, mEventName & "_Click", index, value)
+	If SubExists(mCallBack, mEventName & "_ItemClick") Then
+		CallSub3(mCallBack, mEventName & "_ItemClick", index, value)
 	End If
 End Sub
 

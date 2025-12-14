@@ -4,6 +4,7 @@ This project provides a custom **Blockly** integration inside a **B4J WebView**,
 Blockly programs are executed in JavaScript and communicate back to **B4J** via `executeScript` / WebView callbacks (currently WebSocket-style commands, with BLE planned).
 
 The project is **experimental** and optimized for Blockly **v12.x**.
+(See clients > b4x > src > B4XBlockly)
 
 ---
 
@@ -254,5 +255,4 @@ This keeps the visual workspace synchronized with real device states.
 * Visual execution tracing (highlight active block)
 * Export / import workspaces from B4J UI
 * B4A Client
-
 ---

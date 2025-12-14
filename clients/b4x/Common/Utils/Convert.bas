@@ -96,6 +96,18 @@ Public Sub ByteToBool(b As Byte) As Boolean
 End Sub
 
 '----------------------------------------------
+' BoolToByte
+' Converts a boolean to a single byte.
+' Parameters:
+'   b - Bool to convert
+' Returns:
+'   Boolean - Byte representation, e.g., 0 or 1
+'----------------------------------------------
+Public Sub BoolToByte(b As Boolean) As Byte
+	Return IIf(b, 1, 0)
+End Sub
+
+'----------------------------------------------
 ' BoolToOnOff
 ' Converts bool to string ON or OFF.
 ' Parameters:
@@ -103,7 +115,7 @@ End Sub
 ' Returns:
 '   String - Bool representation, e.g., ON or OFF
 '----------------------------------------------
-Public Sub BoolToOnOff(b As Boolean) as string
+Public Sub BoolToOnOff(b As Boolean) As String
 	Return IIf(b, "ON", "OFF")
 End Sub
 
@@ -237,3 +249,26 @@ Public Sub ParseErrorMessage(Raw As String) As String
 	Return Raw
 End Sub
 #End Region
+
+' ------------------------------
+' Base64 encode/decode
+' ------------------------------
+
+' Encode a string to Base64
+Public Sub EncodeBase64(Data As String) As String
+	Dim jo As JavaObject
+	jo.InitializeStatic("java.util.Base64")
+	Dim encoder As JavaObject = jo.RunMethod("getEncoder", Null)
+	Dim bytes() As Byte = Data.GetBytes("UTF8")
+	Dim base64 As String = encoder.RunMethod("encodeToString", Array(bytes))
+	Return base64
+End Sub
+
+' Decode a Base64 string
+Public Sub DecodeBase64(Base64Text As String) As String
+	Dim jo As JavaObject
+	jo.InitializeStatic("java.util.Base64")
+	Dim decoder As JavaObject = jo.RunMethod("getDecoder", Null)
+	Dim bytes() As Byte = decoder.RunMethod("decode", Array(Base64Text))
+	Return BytesToString(bytes, 0, bytes.Length, "UTF8")
+End Sub

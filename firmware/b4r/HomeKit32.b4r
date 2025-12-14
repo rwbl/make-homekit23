@@ -1,4 +1,4 @@
-﻿Build1=Default,B4RDev,MQTT
+﻿Build1=Default,B4RDev,BLE
 Group=Default Group
 Library1=radafruitneopixelex
 Library10=rmfrc522mifare_i2c

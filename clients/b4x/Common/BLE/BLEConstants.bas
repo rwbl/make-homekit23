@@ -44,7 +44,7 @@ Sub Process_Globals
 	Public DEV_LCD1602 As Byte			= 0x0C
 	Public DEV_PIR_SENSOR As Byte		= 0x0D
 	Public DEV_RFID As Byte				= 0x0E
-	Public DEV_SYSTEM As Byte			= 0xFF
+	Public DEV_SYSTEM As Int			= 0xFF
 #End Region
 
 #Region Command IDs	

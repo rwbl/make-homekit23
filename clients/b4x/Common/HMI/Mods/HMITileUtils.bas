@@ -260,7 +260,7 @@ Private Sub Process_Globals
 
 	' === EVENT TEXT SIZES COMPACT MODE ===
 	Public Const EVENT_COMPACT_TIMESTAMP_TEXT_SIZE 	As Float = 10
-	Public Const EVENT_COMPACT_MESSAGE_TEXT_SIZE   	As Float = 11
+	Public Const EVENT_COMPACT_MESSAGE_TEXT_SIZE   	As Float = 12			' ISA-101 11
 	Public Const EVENT_COMPACT_SOURCE_TEXT_SIZE    	As Float = 14
 	#if B4A
 	Public Const EVENT_COMPACT_ICON_TEXT_SIZE      	As Float = 14

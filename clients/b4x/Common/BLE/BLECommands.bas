@@ -10,11 +10,13 @@ Version=10.3
 ' Date:         2025-11-21
 ' Author:       Robert W.B. Linn (c) 2025 MIT
 ' Description:  Provides TCommand definitions and utilities.
+' Note:			B4R uses unsigned bytes (0–255)
+'				B4J uses signed bytes (–128 to +127) > use Int for DeviceID and CommandID and NOT Byte
 #End Region
 
-Sub Class_Globals
+Private Sub Class_Globals
 	' Command definition
-	Type TCommand (Name As String, DeviceId As Byte, CommandId As Byte, Description As String, Value() As Byte)
+	Type TCommand (Name As String, DeviceId As Int, CommandId As Int, Description As String, Value() As Byte)
 
 	' List of commands
 	Public ListCommands As List
@@ -90,7 +92,7 @@ End Sub
 
 #Region CommandList
 ' Adds a command definition
-Public Sub Add(name As String, devid As Byte, cmdid As Byte, desc As String, value() As Byte)
+Public Sub Add(name As String, devid As Int, cmdid As Int, desc As String, value() As Byte)
 	Dim c As TCommand
 	c.Initialize
 	c.Name = name
@@ -121,7 +123,6 @@ Public Sub Find(name As String) As TCommand
 	Return Null
 End Sub
 
-
 ' Build BLE payload: <deviceid> <commandid> <value...>
 Public Sub BuildPayload(c As TCommand) As Byte()
 	If c = Null Then Return Null
@@ -138,7 +139,6 @@ Public Sub BuildPayload(c As TCommand) As Byte()
 			payload(2 + i) = val(i)
 		Next
 	End If
-
 	Return payload
 End Sub
 #End Region

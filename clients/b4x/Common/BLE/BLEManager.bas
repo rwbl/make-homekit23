@@ -96,6 +96,7 @@ End Sub
 #Region PyBridge
 ' Event triggered by pybridge disconnected from pybridge object (Py).
 Private Sub Py_Disconnected
+	IsConnected = False
 	mMainPage.PyBridgeDisconnected
 	LastMsg = $"[BLEManager.Py_Disconnected][W] PyBridge disconnected"$
 	Log(LastMsg)
@@ -250,6 +251,7 @@ End Sub
 
 ' Event triggered by ble (Bleak.b4xlib).
 Private Sub BLE_DeviceDisconnected(DeviceId As String)
+	IsConnected = False
 	mMainPage.PyBridgeDisconnected
 	LastMsg = $"[BLEManager.BLE_DeviceDisconnected][I] Device disconnected"$
 	Log(LastMsg)
@@ -258,7 +260,7 @@ End Sub
 ' Handle notification received.
 ' Event triggered by ble (Bleak.b4xlib).
 Private Sub BLE_CharNotify(Notification As BleakNotification)
-	Log($"[BLEManager.BLE_CharNotify][I] Charuuid=${Notification.CharacteristicUUID}"$)
+	' Log($"[BLEManager.BLE_CharNotify][I] Charuuid=${Notification.CharacteristicUUID}"$)
 	mMainPage.HandleBLENotification(Notification.value)
 End Sub
 

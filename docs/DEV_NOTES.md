@@ -6,7 +6,7 @@
 **Audience:** Developers contributing to the HomeKit32 ecosystem
 **Status:** Stable / Under active development
 
-------------------------------------------------------------------------
+---
 
 # Introduction
 
@@ -23,68 +23,74 @@ This document defines: - Architecture
 - Coding guidelines
 - Contribution & development workflow
 
-These rules ensure consistency across firmware, C++ wrappers, Python/B4J
-clients, and future B4A mobile apps.
+These rules ensure consistency across firmware, C++ wrappers, 
+Python/B4J/Blockly clients, and future B4A mobile apps.
 
-------------------------------------------------------------------------
+---
 
 # System Architecture Overview
 
 HomeKit32 consists of five layers:
 
 1.  **Hardware Layer**
-    -   ESP32 Plus board\
-    -   13 sensors/actuators from KS5009\
+    -   ESP32 Plus board
+    -   13 sensors/actuators from Keyestudio KS5009
     -   Includes LCD, PIR, gas sensor, servo motors, LEDs, motor driver,
         RFID, etc.
 2.  **Firmware Layer (B4R)**
-    -   Core logic controlling hardware\
-    -   Unified device abstraction\
-    -   BLE and MQTT protocol handlers\
+    -   Core logic controlling hardware
+    -   Unified device abstraction
+    -   BLE and MQTT protocol handlers
     -   C++ libraries for performance-critical tasks
 3.  **Communication Layer**
-    -   BLE: binary commands + notifications\
-    -   MQTT: JSON payloads + structured topics\
+    -   BLE: binary commands + notifications
+    -   MQTT: JSON payloads + structured topics
     -   Optional: Home Assistant autodiscovery
 4.  **Client Layer**
-    -   Python GUI client\
-    -   B4J client\
-    -   CLI test tools\
-    -   B4A app (planned)
+    -   Python GUI client
+    -   B4J client desktop
+    -   B4A client app
+	-	Blockly client (experimental)
+	-   CLI test tools
 5.  **Integration Layer**
-    -   Home Assistant\
-    -   Mosquitto\
-    -   Automation frameworks (Node-RED, Ignition)
+    -   Home Assistant
+    -   Mosquitto
+    -   (Planned) Automation frameworks (Node-RED, Ignition)
 
 ------------------------------------------------------------------------
 
 # Repository Structure
 
-    HomeKit32/
+    HomeKit32
     │
-    ├── firmware/
-    │   ├── B4R/
-    │   │   ├── main.b4r
-    │   │   ├── modules/
-    │   │   ├── libs/        (C++ wrapper .h/.cpp files)
-    │   │   └── config/
-    │   └── tests/
+    ├── clients
+    │   ├── b4x
+    │   │   ├── B4JHMI			(Desktop application HMI style)
+    │   │   ├── B4XBlockly		(Desktop application Blockly - Experimental)
+    │   │   ├── B4XCommander	(Android & Desktop application Commander to test commands)
+    │   │   ├── B4XHMI			(Android & Desktop application HMI style)
+    │   │   └── Common			(B4X common classes and code modules)
+    │   └── python
+    │       ├── hk32commander	(Desktop application Commander to test commands)
+    │       └── hk32gui			(Desktop application HMI style - experimental)
     │
-    ├── docs/
-    │   ├── README.md
+    ├── docs
+    │   ├── HK32-Overview.pdf
     │   ├── BLE_NOTES.md
     │   ├── MQTT_NOTES.md
-    │   ├── DEV_NOTES.md     (this file)
-    │   └── pinout.png
+    │   └── DEV_NOTES.md     	(this file)
     │
-    ├── clients/
-    │   ├── python/
-    │   ├── b4j/
-    │   └── b4a/ (planned)
+    ├── firmware
+    │   ├── B4R
+    │   │   ├── homekit32.b4r	(main program)
+    │   │   ├── modules.bas
+    │   │   ├── libs        	(C++ wrapper .h/.cpp and b4xlib files)
+    │   │   └── config
     │
-    └── tools/
-        ├── mqtt/
-        └── ble/
+    └── servers
+        ├── b4j
+        │   └── broker			(MQTT broker console app)
+        └── mosquitto			(MQTT broker with CLI clients)
 
 ------------------------------------------------------------------------
 
@@ -340,191 +346,20 @@ Public Const LOG_W As String = "[W]"
 Public Const LOG_E As String = "[E]"
 ```
 
-------------------------------------------------------------------------
-
-# C++ Wrapper Guidelines
-
-## File Layout
-
-Every wrapped library must contain:
-- LibraryName.h
-- LibraryName.cpp
-- manifest.txt (optional)
-
-## Header Rules
-
-- Doxygen blocks required for every public function.
-- Must include example usage where helpful.
-- Function names must match B4R naming style where possible.
-
-## B4R Exposure
-
-Wrap functions using:
-
-- B4R::Object* rfid_ReadBlock(Byte block);
-
-## Memory Rules
-
-- No dynamic allocation unless unavoidable.
-- Avoid malloc/free inside called functions.
-- Keep interrupt usage minimal.
-
-------------------------------------------------------------------------
+---
 
 # BLE Protocol Rules
+See BLE_NOTES.MD´.
 
-## Packet Structure
+---
 
-    | 0xAA | LENGTH | CMD | DATA... | CHECKSUM |
+# MQTT Protocol Rules
+See MQTT_NOTES.MD.
 
--   `0xAA` --- Start marker\
--   `LENGTH` --- Byte count including CMD + DATA\
--   `CMD` --- Command ID\
--   `DATA` --- Variable length\
--   `CHECKSUM` --- XOR of all bytes except start marker
+---
 
-## 6.2 Command Groups
-
--   `0x10` Sensor read commands\
--   `0x20` Actuator commands\
--   `0x30` System commands\
--   `0x40` Configuration
-
-## 6.3 Notifications
-
--   Sent automatically on state change\
--   Same packet format as commands\
--   Always start with `0xAA`
-
-## 6.4 Error Handling
-
-Errors reply using:
-
-    CMD | 0x80
-
-------------------------------------------------------------------------
-
-# 7. MQTT Protocol Rules
-
-## 7.1 Topic Structure
-
-    homekit32/<device>/<property>
-
-Examples:
-
-    homekit32/door/state
-    homekit32/temp/value
-    homekit32/light/set
-
-## 7.2 JSON Payload Format
-
-    {
-      "value": <number|string>,
-      "unit": "°C" | "%" | ...,
-      "ts": 1714095955
-    }
-
-## 7.3 MQTT QoS Rules
-
--   Default QoS: **1**\
--   Retain: **false**\
--   Autodiscovery: optional via Home Assistant
-
-------------------------------------------------------------------------
-
-# 8. File & Module Structure
-
-## 8.1 B4R File Structure
-
-    main.b4r
-    Device_*.bas
-    Comm_BLE.bas
-    Comm_MQTT.bas
-    System_Config.bas
-    Utils_Checksum.bas
-
-## 8.2 Client File Naming
-
-    client_ble.py
-    client_mqtt.py
-    client_dashboard.b4j
-
-------------------------------------------------------------------------
-
-# 9. Development Workflow
-
-1.  Create a branch:
-
-```{=html}
-<!-- -->
-```
-    feature/<description>
-
-2.  Commit frequently with meaningful messages.\
-3.  Run local tests (BLE + MQTT).\
-4.  Submit a pull request.\
-5.  All code must compile without warnings.
-
-------------------------------------------------------------------------
-
-# 10. Testing Guidelines
-
-## 10.1 Unit Tests (B4R)
-
--   Test each device module individually.
--   Verify all BLE commands.
--   Validate MQTT JSON structure.
-
-## 10.2 Integration Tests
-
--   Full smart-home scenario test:
-    -   Door servo
-    -   Motion sensor
-    -   LCD update
-    -   Button events
-
-## 10.3 Stress Tests
-
--   Multi-client BLE test\
--   MQTT flooding test (100 messages/sec)
-
-------------------------------------------------------------------------
-
-# 11. Release Policy
-
--   Versioning: **Semantic Versioning (SemVer)**\
--   Tag format:
-
-```{=html}
-<!-- -->
-```
-    v1.2.0
-
-Release checklist: - BLE protocol updated?\
-- MQTT topics updated?\
-- Firmware compiled?\
-- Docs updated?
-
-------------------------------------------------------------------------
-
-# 12. Roadmap (Developer Perspective)
-
--   Finish BLE full spec\
--   C++ auto-generated wrappers\
--   Add encrypted BLE mode\
--   Multi-node MQTT mesh\
--   B4A Android control app\
--   Web dashboard via B4J or Node-RED
-
-------------------------------------------------------------------------
-
-# 13. License
+# License
 
 This project is open source under the **MIT License**.
 
-------------------------------------------------------------------------
-
-# 14. Contact
-
-For questions, suggestions, or collaboration:\
-**Robert W.W. Linn**
+---
