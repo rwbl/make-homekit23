@@ -2,7 +2,7 @@
 
 ---
 
-## v0.1.0 (Build 20YYMMDD)
+## v1.0.0 (Build 20251214)
 - Initial release
 
 

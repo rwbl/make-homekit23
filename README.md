@@ -1,5 +1,7 @@
 # HomeKit32
 
+> This repository is provided for reference and learning purposes only; issue tracking is disabled.
+
 **HomeKit32** is a modular smart-home automation framework for the  
 Keyestudio Smart Home Kit (KS5009), powered by **ESP32, BLE, MQTT and B4X**.
 
@@ -84,6 +86,10 @@ All **13 devices** from the Keyestudio KS5009 kit, including:
 - MQTT gateway: **stable**
 - Blockly integration: **experimental but functional**
 - Actively developed and refactored as a learning project
+This is a personal, non-commercial hobby project.
+
+The repository is shared for learning and inspiration.
+Issue tracking and feature requests are intentionally disabled.
 
 ---
 
