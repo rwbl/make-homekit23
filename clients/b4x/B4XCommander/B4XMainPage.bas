@@ -7,7 +7,7 @@ Version=9.85
 #Region Class Header
 ' File:			HK32Commander
 ' Brief:		Client controlling the HomeKit32 via BLE using commands.
-' Date:			2025-12-07
+' Date:			2025-12-10
 ' Author:		Robert W.B. Linn (c) 2025 MIT
 ' Description:	This B4J application (app) connects as a client with an ESP32 running as Bluetooth Low Energy (BLE) server.
 '				The BLE-Server advertises DHT22 sensor data temperature & humidity and listens to commands send from connected clients.
@@ -34,7 +34,7 @@ Version=9.85
 #End Region
 
 Private Sub Class_Globals
-	Private Const VERSION As String = "HK32Commander v20251207"
+	Private Const VERSION As String = "HK32Commander v20251210"
 	
 	' UI
 	Private Root As B4XView
@@ -106,7 +106,7 @@ Private Sub B4XPage_Appear
 	#if B4A
 	If Not(IsConnected) Then
 		Connect
-	end if
+	End If
 	#End If
 End Sub
 
@@ -341,5 +341,13 @@ Private Sub TileListCommands_ItemClick (Index As Int, Value As Object)
 		#End If
 	End If
 End Sub
-#end region
+#End Region
 
+#Region TileEventViewer
+Private Sub TileEventViewer_ItemClick (Index As Int, Value As Object)
+	Dim item As String = Value
+	item = TileEventViewer.ClvEvents.GetValue(Index)
+	Dim sf As Object = xui.Msgbox2Async(item, "View Item", "OK", "", "", Null)
+	Wait For (sf) Msgbox_Result (Result As Int)
+End Sub
+#End Region

@@ -144,6 +144,8 @@ Requirements:
 * Python GUI
 * Blockly (via B4J WebView)
 
+The folder make-homekit32\clients\b4x\src\libs\ contains additional libraries required for B4X applications.
+Copy to the B4J or B4A additional libraries folder.
 ---
 
 ## Project Status

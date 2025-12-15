@@ -7,7 +7,7 @@ Version=9.85
 #Region Class Header
 ' File:			HK32HMI
 ' Brief:		Client controlling the HomeKit32 via BLE using HMI ISA101 standard.
-' Date:			2025-12-04
+' Date:			2025-12-07
 ' Author:		Robert W.B. Linn (c) 2025 MIT
 ' Description:	This B4J application (app) connects as a client with an ESP32 running as Bluetooth Low Energy (BLE) server.
 '				The BLE-Server advertises DHT22 sensor data temperature & humidity and listens to commands send from connected clients.
@@ -23,7 +23,7 @@ Version=9.85
 #End Region
 
 Sub Class_Globals
-	Private VERSION As String	= "HomeKit32HMI v20251204"
+	Private VERSION As String	= "HomeKit32HMI v20251207"
 	Private COPYRIGHT As String = "Keyestudio Smart Home Kit ESP32 Control by Robert W.B. Linn (c) 2025 MIT"
 
 	' XUI Base	
@@ -69,6 +69,7 @@ Sub Class_Globals
 	Private RFID As DevRFID
 	Private RGBLED As DevRGBLED
 	Private DHT11 As DevDHT11
+	Private LCD As DevLCD1602
 	
 End Sub
 
@@ -97,7 +98,9 @@ Private Sub B4XPage_Created (Root1 As B4XView)
 	TileButtonDoorUpdate(False)
 	TileButtonWindowUpdate(False)
 	TileButtonFanUpdate(False)
-	TileButtonAlarm.SetInfo("--")
+	TileButtonAlarm.SetInfo("Cleared")
+	TileSensorPIRSensor.Value = "Cleared"
+	TileSensorGasSensor.Value = "Cleared"
 	
 	' Add info to the event log
 	TileEventViewer.Insert($"[B4XPage_Created] ${VERSION}"$, HMITileUtils.EVENT_LEVEL_INFO)
@@ -124,6 +127,7 @@ Private Sub B4XPage_Created (Root1 As B4XView)
 	RFID.Initialize(BLEMgr)
 	RGBLED.Initialize(BLEMgr)
 	DHT11.Initialize(BLEMgr)
+	LCD.Initialize(BLEMgr)
 	
 	' Start ble connection
 	'TileButtonConnect_Click
@@ -148,6 +152,16 @@ End Sub
 
 Public Sub PyBridgeDisconnected
 	TileButtonConnectUpdate(False)
+	TileButtonYellowLEDUpdate(False)
+	TileButtonRGBLEDUpdate(False)
+	TileButtonConnect.SetStateFontFontAwesome
+	TileButtonConnectUpdate(False)
+	TileButtonDoorUpdate(False)
+	TileButtonWindowUpdate(False)
+	TileButtonFanUpdate(False)
+	TileButtonAlarm.SetInfo("Cleared")
+	TileSensorPIRSensor.Value = "Cleared"
+	TileSensorGasSensor.Value = "Cleared"
 End Sub
 #End Region
 
@@ -238,6 +252,9 @@ Public Sub HandleBLENotification(payload() As Byte)
 					End If
 				End If
 				TileButtonAlarm.SetWarning($"RFID touched${CRLF}Group${CRLF}${group}"$)
+				LCD.Clear
+				LCD.SetText(0,0,"RFID touched")
+				LCD.SetText(1,0,$"G:${group} C:${command}"$)
 			End If
 		Case Else
 			' m = CreateMap("msg":"Device not found or data not parsed")
@@ -303,22 +320,22 @@ Private Sub TileButtonYellowLEDUpdate(state As Boolean)
 	Log($"[TileButtonYellowLEDUpdate] state=${state}"$)
 End Sub
 
-Private Sub TileReadoutTemperature_Click(EventData As MouseEvent)
+Private Sub TileReadoutTemperature_Click
 	BLEMgr.Write(Array As Byte(BLEConstants.DEV_DHT11, BLEConstants.CMD_GET_VALUE))
 	Log($"[TileReadoutTemperature_Click] done"$)
 End Sub
 
-Private Sub TileSensorTemperature_Click(EventData As MouseEvent)
+Private Sub TileSensorTemperature_Click
 	BLEMgr.Write(Array As Byte(BLEConstants.DEV_DHT11, BLEConstants.CMD_GET_VALUE))
 	Log($"[TileSensorTemperature_Click] done"$)
 End Sub
 
-Private Sub TileReadoutHumidity_Click(EventData As MouseEvent)
+Private Sub TileReadoutHumidity_Click
 	BLEMgr.Write(Array As Byte(BLEConstants.DEV_DHT11, BLEConstants.CMD_GET_VALUE))
 	Log($"[TileReadoutHumidity_Click] done"$)
 End Sub
 
-Private Sub TileReadoutMoisture_Click(EventData As MouseEvent)
+Private Sub TileReadoutMoisture_Click
 	BLEMgr.Write(Array As Byte(BLEConstants.DEV_MOISTURE, BLEConstants.CMD_GET_VALUE))
 	Log($"[TileReadoutMoisture_Click] done"$)
 End Sub
@@ -407,7 +424,7 @@ End Sub
 #End Region
 
 #Region Motion
-Private Sub TileSensorPIRSensor_Click(EventData As MouseEvent)
+Private Sub TileSensorPIRSensor_Click
 	PIRSensor.SetEnabled(Not (PIRSensor.GetEnabled))
 	TileEventViewer.Insert($"[TileSensorPIRSensor] enabled=${PIRSensor.GetEnabled}"$, HMITileUtils.EVENT_LEVEL_INFO)
 	Log($"[TileSensorPIRSensor] enabled=${PIRSensor.GetEnabled}"$)
@@ -415,7 +432,7 @@ End Sub
 #End Region
 
 #Region Gas Sensor
-Private Sub TileSensorGas_Click(EventData As MouseEvent)
+Private Sub TileSensorGas_Click
 	
 End Sub
 #End Region
@@ -438,11 +455,11 @@ End Sub
 
 
 #Region TileEventViewer/Info
-Private Sub TileEventViewer_Click(EventData As MouseEvent)
+Private Sub TileEventViewer_Click
 	Log(BLEMgr.LastMsg)
 End Sub
 
-Private Sub TileLabelInfo_Click(EventData As MouseEvent)
+Private Sub TileLabelInfo_Click
 '	If Root.Tag.As(String).Length == 0 Then Root.Tag = 0
 '	If Root.Tag.As(Byte) == 0 Then
 '		HMITileUtils.EnableHMITileGrid(Root)
