@@ -7,7 +7,7 @@ Version=9.85
 #Region Class Header
 ' File:			HK32HMI
 ' Brief:		B4X, B4J Client controlling the HomeKit32 via BLE using HMI tiles.
-' Date:			2025-12-07
+' Date:			2025-12-15
 ' Author:		Robert W.B. Linn (c) 2025 MIT
 ' Description:	This B4X Application (B4A, B4J) connects As a BLE Central (GATT Client)
 '				To an ESP32 running B4R firmware acting As a BLE Peripheral (GATT Server).
@@ -49,7 +49,7 @@ Version=9.85
 #End Region
 
 Private Sub Class_Globals
-	Private Const VERSION As String = "HK32HMI v20251207"
+	Private Const VERSION As String = "HK32HMI v20251215"
 	
 	' UI
 	Private Root As B4XView
