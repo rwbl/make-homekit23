@@ -7,7 +7,7 @@ Version=9.85
 #Region Class Header
 ' File:			HK32HMI
 ' Brief:		B4X, B4J Client controlling the HomeKit32 via BLE using HMI tiles.
-' Date:			2025-12-15
+' Date:			2025-12-31
 ' Author:		Robert W.B. Linn (c) 2025 MIT
 ' Description:	This B4X Application (B4A, B4J) connects As a BLE Central (GATT Client)
 '				To an ESP32 running B4R firmware acting As a BLE Peripheral (GATT Server).
@@ -29,7 +29,8 @@ Version=9.85
 '				- Acer V3-771G, 17.6-inch (44.7 cm), 1600 x 900 px, Ubuntu
 ' Software: 	B4A 13.40 (64 bit), B4J 10.30 (64 bit), Java JDK 19
 ' Libraries:	B4A: BLE2 1.41, B4XPages 1.12
-'				B4J: PyBridge 1.00, Bleak 1.02, ByteConverter 1.10
+'				B4J: PyBridge 1.00, Bleak 1.02, ByteConverter 1.10, HMITiles 1.40
+'				Min versions to include.
 ' Bleak:		Install:
 '				Set python path under Tools: C:\Prog\B4J\Libraries\Python\python\python.exe
 '				Open global Python shell: ide://run?File=%B4J_PYTHON%\..\WinPython+Command+Prompt.exe
@@ -49,7 +50,8 @@ Version=9.85
 #End Region
 
 Private Sub Class_Globals
-	Private Const VERSION As String = "HK32HMI v20251215"
+	Private Const VERSION As String = "HK32HMI v20251231"
+	Private Const WELCOME As String	= "Welcome to HomeKit32 (c) 2025 Robert W.B. Linn - MIT"
 	
 	' UI
 	Private Root As B4XView
@@ -62,12 +64,14 @@ Private Sub Class_Globals
 	Private TileSensorTemperature As HMITileSensor
 	Private TileSensorHumidity As HMITileSensor
 	Private TileSensorMoisture As HMITileSensor
-	Private TileSensorGasSensor As HMITileSensor
-	Private TileRGBLED As HMITileRGB
+	Private TileSensorGas As HMITileSensor
+	#if B4J
+	Private TileRGBLED As HMITileRGB	
+	#End If
 	Private TileButtonRGBLED As HMITileButton
 	Private TileButtonDoor As HMITileButton
 	Private TileButtonWindow As HMITileButton
-	Private TileSensorPIRSensor As HMITileSensor
+	Private TileSensorPIR As HMITileSensor
 	Private TileButtonPlayAlarm As HMITileButton
 	Private TileButtonFan As HMITileButton
 	Private TileClock As HMITileClock
@@ -116,7 +120,7 @@ End Sub
 Private Sub B4XPage_Created (Root1 As B4XView)
 	Root = Root1
 	' Load layout case sensitive
-	Root.LoadLayout("MainPage")
+	Root.LoadLayout("mainpage")
 
 	' UI
 	B4XPages.SetTitle(Me, VERSION)
@@ -129,10 +133,9 @@ Private Sub B4XPage_Created (Root1 As B4XView)
 	' Add info to the event log
 	TileEventViewer.Insert($"[B4XPage_Created] ${VERSION}"$, HMITileUtils.EVENT_LEVEL_INFO)
 	TileEventViewer.Insert($"[B4XPage_Created] BLE disconnected"$, HMITileUtils.EVENT_LEVEL_WARNING)
-	LabelAbout.Text = "Welcome"
+	LabelAbout.Text = WELCOME
 	
-	' Init devices
-	' Initialize devices
+	' Initialize devices (each device has its own class module)
 	YellowLED.Initialize(BLEMgr)
 	Buzzer.Initialize(BLEMgr)
 	Door.Initialize(BLEMgr)
@@ -374,11 +377,11 @@ Private Sub ProcessBLE(payload() As Byte)
 	Select deviceid
 		Case BLEConstants.DEV_YELLOW_LED
 			Dim datayellowled As TDevYellowLED = YellowLED.Parse(payload)
-			TileEventViewer.Insert($"[HandleBLENotification] YellowLED state=${datayellowled.State}"$, HMITileUtils.EVENT_LEVEL_INFO)
+			TileEventViewer.Insert($"[ProcessBLE] YellowLED state=${datayellowled.State}"$, HMITileUtils.EVENT_LEVEL_INFO)
 
 		Case BLEConstants.DEV_BUZZER
 			Dim databuzzer As TDevBuzzer= Buzzer.Parse(payload)
-			TileEventViewer.Insert($"[HandleBLENotification] Buzzer state=${databuzzer.State}"$, HMITileUtils.EVENT_LEVEL_INFO)
+			TileEventViewer.Insert($"[ProcessBLE] Buzzer state=${databuzzer.State}"$, HMITileUtils.EVENT_LEVEL_INFO)
 
 		Case BLEConstants.DEV_MOISTURE
 			m = MoistureSensor.Parse(payload)
@@ -392,29 +395,29 @@ Private Sub ProcessBLE(payload() As Byte)
 			Dim datadht11 As TDevDHT11 = DHT11.Parse(payload)
 			TileSensorTemperature.SetValue(datadht11.Temperature)
 			TileSensorHumidity.SetValue(datadht11.Humidity)
-			TileEventViewer.Insert($"[HandleBLENotification] DHT11 t=${datadht11.Temperature},h=${datadht11.Humidity}"$, HMITileUtils.EVENT_LEVEL_INFO)
+			TileEventViewer.Insert($"[ProcessBLE] DHT11 t=${datadht11.Temperature},h=${datadht11.Humidity}"$, HMITileUtils.EVENT_LEVEL_INFO)
 
 		Case BLEConstants.DEV_PIR_SENSOR
 			m = PIRSensor.Parse(payload)
 			Dim value As Byte = m.get("value")
 			If value == 1 Then
-				TileSensorPIRSensor.Value = "Detected"
-				TileSensorPIRSensor.SetStyleWarning
+				TileSensorPIR.Value = "Detected"
+				TileSensorPIR.SetStyleWarning
 			Else
-				TileSensorPIRSensor.Value = "Cleared"
-				TileSensorPIRSensor.SetStyleInfo
+				TileSensorPIR.Value = "Cleared"
+				TileSensorPIR.SetStyleNormal
 			End If
 
 		Case BLEConstants.DEV_GAS_SENSOR
 			m = GasSensor.Parse(payload)
 			Dim value As Byte = m.get("value")
-			TileSensorGasSensor.Value = value
+			TileSensorGas.Value = value
 			If value == 0 Then
-				TileSensorGasSensor.Value = "Detected"
-				TileSensorGasSensor.SetStyleAlarm
+				TileSensorGas.Value = "Detected"
+				TileSensorGas.SetStyleAlarm
 			Else
-				TileSensorGasSensor.Value = "Cleared"
-				TileSensorGasSensor.SetStyleInfo
+				TileSensorGas.Value = "Cleared"
+				TileSensorGas.SetStyleNormal
 			End If
 
 		Case BLEConstants.DEV_RFID
@@ -448,15 +451,17 @@ Private Sub SetTilesInitialState
 	TileButtonConnect.SetStateFontFontAwesome
 	TileButtonConnectUpdate(IsConnected)
 	TileButtonYellowLEDUpdate(False)
-	TileButtonRGBLEDUpdate(False)
+	#If B4J
+	TileButtonRGBLEDUpdate(False)	
+	#End If
 	TileButtonDoorUpdate(False)
 	TileButtonWindowUpdate(False)
 	TileButtonFanUpdate(False)
 	TileButtonEventsUpdate(False)
 	TileButtonAlarm.SetInfo("--")
-	TileSensorPIRSensor.Value = "--"
-	TileSensorPIRSensor.SetStyleInfo
-	TileSensorGasSensor.Value = "--"
+	TileSensorPIR.Value = "--"
+	TileSensorPIR.SetStyleNormal
+	TileSensorGas.Value = "--"
 	TileSensorMoisture.Value = "--"
 	TileSensorTemperature.Value = "--"
 	TileSensorHumidity.Value = "--"
@@ -585,8 +590,35 @@ End Sub
 #End Region
 
 #Region RGBLED
+Private Sub TileButtonRGBLED_Click
+	If Not(IsConnected) Then
+		TileEventViewer.Insert($"[TileButtonRGBLED_Click] BLE not connected."$, HMITileUtils.EVENT_LEVEL_WARNING)
+		Return
+	End If
+	' Set the device
+	If Not(RGBLED.IsOn) Then
+		RGBLED.SetColor(10,10,10)
+	Else
+		RGBLED.SetOff		
+	End If
+	' Update the tile
+	TileButtonRGBLEDUpdate(RGBLED.IsOn)
+End Sub
+
+' Update the button UI color & text.
+Public Sub TileButtonRGBLEDUpdate(state As Boolean)
+	If Not(TileButtonRGBLED.IsInitialized) Then Return
+	TileButtonRGBLED.State = state
+	TileButtonRGBLED.StateText = Convert.BoolToOnOff(state)
+	Log($"[TileButtonRGBLEDUpdate] state=${state}"$)
+End Sub
+
+#If B4J
 Private Sub TileRGBLED_ValueChanged(m As Map)
-	If Not(IsConnected) Then Return
+	If Not(IsConnected) Then
+		TileEventViewer.Insert($"[TileButtonRGBLED_ValueChanged] BLE not connected."$, HMITileUtils.EVENT_LEVEL_WARNING)
+		Return
+	End If
 	If Not(TileRGBLED.IsInitialized) Then Return
 	Log($"[TileRGB_ValueChanged] ${m}"$)
 	' Cast the map values to byte
@@ -597,36 +629,8 @@ Private Sub TileRGBLED_ValueChanged(m As Map)
 	' Update the tile
 	TileButtonRGBLEDUpdate(RGBLED.IsOn)
 End Sub
-
-Private Sub TileButtonRGBLED_Click
-	If Not(IsConnected) Then Return
-	If Not(TileButtonRGBLED.IsInitialized) Then Return
-	Dim state As Boolean = Not(RGBLED.IsOn)
-
-	' Set the device - on B4A the HMITileRGB is not used.
-	#if B4A
-	If state Then 
-		RGBLED.SetWarning
-	Else
-		RGBLED.SetOff
-	End If
-	#End If
-	#if B4J
-	RGBLED.SetOnOff(state)
-	#end if
-	
-	' Update the tile
-	TileButtonRGBLEDUpdate(state)
-	Log($"[TileButtonRGBLED_Click] state=${state}"$)
-End Sub
-
-Private Sub TileButtonRGBLEDUpdate(state As Boolean)
-	If Not(TileButtonRGBLED.IsInitialized) Then Return
-	TileButtonRGBLED.SetStateColor(state)
-	TileButtonRGBLED.StateText = Convert.BoolToOnOff(state)
-'	Log($"[TileButtonRGBLEDUpdate] state=${state}"$)
-End Sub
 #End Region
+#End If
 
 #Region Door
 Private Sub TileButtonDoor_Click
@@ -663,10 +667,10 @@ End Sub
 #End Region
 
 #Region Motion
-Private Sub TileSensorPIRSensor_Click
+Private Sub TileSensorPIR_Click
 	PIRSensor.SetEnabled(Not (PIRSensor.GetEnabled))
-	TileEventViewer.Insert($"[TileSensorPIRSensor] enabled=${PIRSensor.GetEnabled}"$, HMITileUtils.EVENT_LEVEL_INFO)
-	Log($"[TileSensorPIRSensor] enabled=${PIRSensor.GetEnabled}"$)
+	TileEventViewer.Insert($"[TileSensorPIR] enabled=${PIRSensor.GetEnabled}"$, HMITileUtils.EVENT_LEVEL_INFO)
+	Log($"[TileSensorPIR] enabled=${PIRSensor.GetEnabled}"$)
 End Sub
 #End Region
 
@@ -703,7 +707,7 @@ Private Sub TileButtonEvents_Click
 	' Option to immediate get the state
 	TileSensorTemperature_Click
 	TileSensorMoisture_Click
-	TileSensorPIRSensor_Click
+	TileSensorPIR_Click
 
 	Log($"[TileButtonEvents_Click] state=${state}"$)
 End Sub
