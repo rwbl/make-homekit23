@@ -105,9 +105,9 @@ Issue tracking and feature requests are intentionally disabled.
 
 Additional documentation is included in the repository:
 
-- `DEV_NOTES.md` – Development guidelines and architecture
-- `BLE_NOTES.md` – BLE services, characteristics, packet format
-- `MQTT_NOTES.md` – MQTT topics and payloads
+- `DEV_NOTES.md` - Development guidelines and architecture
+- `BLE_NOTES.md` - BLE services, characteristics, packet format
+- `MQTT_NOTES.md` - MQTT topics and payloads
 
 ---
 
