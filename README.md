@@ -22,6 +22,12 @@ The system is designed to be **easy to extend**, **easy to understand**, and **s
 
 ---
 
+## Screenshots
+
+![Overview Dashboard](images/overview_dashboard.png "Overview Dashboard")
+
+---
+
 ## Core Components
 
 - **Firmware**
