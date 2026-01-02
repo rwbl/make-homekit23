@@ -7,7 +7,6 @@ The project follows semantic versioning where possible.
 ---
 
 ## [1.1.0] - 2025-12-31
-<<<<<<< HEAD
 
 ### Added
 - Example B4XHMI Dashboard (B4J, B4A) using the HMITiles B4X library.
@@ -28,7 +27,6 @@ The project follows semantic versioning where possible.
 	- [HMITiles](https://www.b4x.com/android/forum/threads/hmitiles.169774/#post-1040428) open-source HMI (Human Machine Interface) library for industrial dashboards.
 	- Tile default size 120x120px.
 
->>>>>>> 889abacf625f7708ff348d1dc750381f07fac2f4
 ---
 
 ## [1.0.0] - 2025-12-14
