@@ -81,7 +81,9 @@ All **13 devices** from the Keyestudio KS5009 kit, including:
   - Devices (LEDs, door, sensors)
   - Loops and conditions
   - Delays and indicators
-- Blockly programs are executed asynchronously and translated into BLE/MQTT commands
+- Blockly programs are executed asynchronously and translated into BLE/MQTT commands.
+
+![Blockly LED Blink Example](images/blockly_led_blink.png "Blockly LED Blink Example")
 
 ---
 
