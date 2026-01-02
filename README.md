@@ -124,7 +124,7 @@ Additional documentation is included in the repository:
 
 ## License
 
-- **HomeKit32** – MIT License © 2025 Robert W. W. Linn
+- **HomeKit32** – MIT License © 2025-2026 Robert W. W. Linn
 - Third-party libraries retain their original licenses (see LICENSE)
 
 ---
